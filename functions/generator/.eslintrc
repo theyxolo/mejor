@@ -1,0 +1,12 @@
+{
+	"extends": "eslint-config-cretia",
+	"overrides": [
+		{
+			"files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+			"rules": {
+				"compat/compat": "off",
+				"@typescript-eslint/no-non-null-assertion": "off"
+			}
+		}
+	]
+}

@@ -1,0 +1,312 @@
+import { useRef, Fragment, useCallback, useEffect, useState } from 'react'
+import { useField } from 'formik'
+import { useTranslation } from 'react-i18next'
+import { useParams } from 'react-router-dom'
+import update from 'immutability-helper'
+import { useAccount } from 'wagmi'
+import styled from 'styled-components'
+import { DndProvider, useDrag, useDrop } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
+import { DragHandleDots2Icon } from '@radix-ui/react-icons'
+import { PlusCircle } from 'react-feather'
+import type { Identifier, XYCoord } from 'dnd-core'
+
+import TokenPreview from 'modules/TokenPreview'
+
+import Button, { Icon } from 'components/Button'
+import { Flex, Grid } from 'components/system'
+import { Switch, SwitchThumb } from 'components/Switch'
+
+import type {
+	Project,
+	Template,
+	// Trait, Attribute
+} from 'lib/types'
+import { getAssetUrl } from 'lib'
+
+const cardStyle = {
+	cursor: 'move',
+	marginBottom: 'var(--space--medium)',
+	display: 'flex',
+	position: 'relative',
+	backgroundColor: 'var(--colors--background_alternate)',
+	color: 'white',
+}
+
+const ImgContainer = styled.div`
+	height: 50px;
+	width: 50px;
+	border-radius: 12px;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	overflow: hidden;
+`
+
+const TokenName = styled.p`
+	width: 100%;
+`
+
+interface DragItem {
+	index: number
+	id: string
+	type: string
+}
+
+function AttributeItem({
+	id,
+	text,
+	index,
+	moveItem,
+	image,
+	enabled,
+}: {
+	id: any
+	text: string
+	index: number
+	moveItem: (dragIndex: number, hoverIndex: number) => void
+	image: string
+	enabled: boolean
+}) {
+	const ref = useRef<HTMLDivElement>(null)
+	const [{ handlerId }, drop] = useDrop<
+		DragItem,
+		void,
+		{ handlerId: Identifier | null }
+	>({
+		accept: 'CARD',
+		collect(monitor) {
+			return {
+				handlerId: monitor.getHandlerId(),
+			}
+		},
+		hover(item: DragItem, monitor) {
+			if (!ref.current) return
+
+			const dragIndex = item.index
+			const hoverIndex = index
+
+			// Don't replace items with themselves
+			if (dragIndex === hoverIndex) return
+
+			// Determine rectangle on screen
+			const hoverBoundingRect = ref.current?.getBoundingClientRect()
+
+			// Get vertical middle
+			const hoverMiddleY =
+				// eslint-disable-next-line no-magic-numbers
+				(hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
+
+			// Determine mouse position
+			const clientOffset = monitor.getClientOffset()
+
+			// Get pixels to the top
+			const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top
+
+			// Only perform the move when the mouse has crossed half of the items height
+			// When dragging downwards, only move when the cursor is below 50%
+			// When dragging upwards, only move when the cursor is above 50%
+
+			// Dragging downwards
+			if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+				return
+			}
+
+			// Dragging upwards
+			if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+				return
+			}
+
+			// Time to actually perform the action
+			moveItem(dragIndex, hoverIndex)
+
+			// Note: we're mutating the monitor item here!
+			// Generally it's better to avoid mutations,
+			// but it's good here for the sake of performance
+			// to avoid expensive index searches.
+			item.index = hoverIndex
+		},
+	})
+
+	const [{ isDragging }, drag] = useDrag({
+		type: 'CARD',
+		item: () => ({ id, index }),
+		collect: (monitor: any) => ({
+			isDragging: monitor.isDragging(),
+		}),
+	})
+
+	const opacity = isDragging ? 0 : 1
+	drag(drop(ref))
+
+	return (
+		<Button
+			as="div"
+			ref={ref}
+			style={
+				{
+					...cardStyle,
+					opacity,
+				} as any
+			}
+			data-handler-id={handlerId}
+		>
+			<Icon
+				as={DragHandleDots2Icon}
+				style={{
+					position: 'absolute',
+					left: 'var(--space--large)',
+				}}
+				noMargin
+			/>
+			<Flex
+				style={{
+					width: '100%',
+					paddingLeft: 'calc(var(--space--large) + var(--space--medium))',
+				}}
+				justifyContent="space-between"
+				marginRight="var(--space--medium)"
+				alignItems="center"
+			>
+				<TokenName>{text}</TokenName>
+				<ImgContainer>
+					<img style={{ width: '100%', height: '100%' }} src={image} alt="" />
+				</ImgContainer>
+			</Flex>
+			<Switch checked={enabled} disabled>
+				<SwitchThumb />
+			</Switch>
+		</Button>
+	)
+}
+
+function TemplateItem({
+	id,
+	projectId,
+	address,
+}: {
+	address: string
+	projectId: string
+	id: string
+}) {
+	const [{ value: template }, , { setValue }] = useField<Template>(
+		`projects.${projectId}.templates.${id}`,
+	)
+	const [templateName] = useField(`projects.${projectId}.templates.${id}.name`)
+	const [{ value: traits }] = useField<Project['traits']>(
+		`projects.${projectId}.traits`,
+	)
+	const [{ value: attributes }] = useField<Project['attributes']>(
+		`projects.${projectId}.attributes`,
+	)
+	const [items, setItems] = useState<string[]>(template.attributes)
+
+	useEffect(() => {
+		const nextValue = { ...template, attributes: items }
+
+		if (JSON.stringify(nextValue) === JSON.stringify(template)) return
+
+		setValue(nextValue, true)
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [items, template])
+
+	const moveItem = useCallback((dragIndex: number, hoverIndex: number) => {
+		setItems((prevItems: any) =>
+			update(prevItems, {
+				$splice: [
+					[dragIndex, 1],
+					[hoverIndex, 0, prevItems[dragIndex]],
+				],
+			}),
+		)
+	}, [])
+
+	// const allAttributeIds = Object.keys(attributes ?? {})
+
+	const renderCard = useCallback(
+		(item: string, index: number) => {
+			const [traitId] = attributes[item]?.traits ?? []
+			const { assetKey } = traits[traitId]
+			// const enabled = items.some((i) => i === item)
+
+			return (
+				<AttributeItem
+					key={item}
+					id={item}
+					index={index}
+					moveItem={moveItem}
+					enabled
+					text={attributes[item].name}
+					image={getAssetUrl(assetKey, { address, project: projectId })}
+				/>
+			)
+		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[],
+	)
+
+	return (
+		<Flex
+			width="100%"
+			maxWidth="800px"
+			flexDirection="column"
+			gap="var(--space--medium)"
+		>
+			<label htmlFor="">
+				<input style={{ fontSize: '1.5rem' }} {...templateName} />
+			</label>
+			<Grid gridTemplateColumns="1fr 1fr" gap="var(--space--large)">
+				<DndProvider backend={HTML5Backend}>
+					<div>{items.map((element, index) => renderCard(element, index))}</div>
+				</DndProvider>
+				<TokenPreview
+					name=""
+					number={0}
+					projectName=""
+					assets={items.map((attributeKey) => {
+						const [firstTraitId] = attributes[attributeKey]?.traits ?? []
+						const { assetKey } = traits[firstTraitId] ?? {}
+						return assetKey
+					})}
+					address={address}
+					projectId={projectId!}
+				/>
+			</Grid>
+		</Flex>
+	)
+}
+
+function Templates() {
+	const { t } = useTranslation()
+	const { projectId } = useParams()
+	const { address } = useAccount()
+
+	const [{ value: templates }] = useField(`projects.${projectId}.templates`)
+
+	return (
+		<>
+			<Flex
+				marginBottom="var(--space--large)"
+				justifyContent="space-between"
+				alignItems="center"
+			>
+				<h2 style={{ margin: 0 }}>{t('templates')}</h2>
+				<Button disabled>
+					{t('addTemplate')}
+					<Icon as={PlusCircle} />
+				</Button>
+			</Flex>
+			<p style={{ marginBottom: 'var(--space--large)' }}>
+				{t('screens.templates.instructions')}
+			</p>
+			{Object.keys(templates ?? {}).map((key) => (
+				<Fragment key={key}>
+					<hr />
+					<TemplateItem id={key} address={address!} projectId={projectId!} />
+				</Fragment>
+			))}
+		</>
+	)
+}
+
+export { AttributeItem }
+
+export default Templates

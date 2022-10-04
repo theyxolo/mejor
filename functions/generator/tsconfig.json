@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"alwaysStrict": true,
+		"sourceMap": true,
+		"removeComments": true,
+		"target": "es2017",
+		"module": "commonjs",
+		"lib": ["es2017", "esnext.asynciterable"],
+
+		// TODO: This is added to make the middy import work, do we need this?
+		"esModuleInterop": true
+	}
+}

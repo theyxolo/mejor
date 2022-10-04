@@ -1,0 +1,58 @@
+{
+	"projects": {
+		"default": {
+			"owner": "",
+			"name": "Default",
+			"dimensions": 1200,
+			"count": 2020,
+			"metadata": {
+				"symbol": "COLL",
+				"name": "{{project}} #{{id}}",
+				"externalUrl": "https://mycoll.art/token/{{id}}",
+				"description": "This is a token from the {{collection}} collection",
+				"gateway": "https://gateway.pinata.cloud/ipfs/{{ipfs}}"
+			},
+
+			"artwork": {
+				"dimensions": 2400,
+				"format": "png"
+			},
+
+			"rules": [],
+
+			"traits": {
+				"TRAIT_ID": {
+					"name": "Mohawk",
+					"weight": "100%",
+					"showInMetadata": true,
+					"assetKey": "/TRAIT_ID.png"
+				}
+			},
+			"attributes": {
+				"ATTRIBUTE_ID": {
+					"name": "Hair",
+					"showInMetadata": true,
+					"blendType": "normal",
+					"weight": "100%",
+					"traits": ["TRAIT_ID"]
+				}
+			},
+			"customTokens": {
+				"CUSTOM_ID": {
+					"name": "Unique",
+					"traits": ["TRAIT_ID"],
+					"assetKey": "/main.png"
+				}
+			},
+			"templates": {
+				"TEMPLATE_ID": {
+					"name": "Default",
+					"weight": "100%",
+					"showInMetadata": false,
+					"attributes": ["ATTRIBUTE_ID"]
+				}
+			},
+			"out": [[]]
+		}
+	}
+}

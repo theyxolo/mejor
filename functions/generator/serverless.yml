@@ -1,0 +1,68 @@
+org: cesargdm
+app: mejor
+service: generator
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  environment:
+    ASSETS_BUCKET: ${param:ASSETS_BUCKET}
+  httpApi:
+    cors:
+      allowedOrigins:
+        - http://localhost:5173
+        - https://mejor.theyxolo.art
+      allowCredentials: false
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - 'lambda:InvokeFunction'
+          Resource: '*'
+        - Effect: Allow
+          Action: 's3:ListBucket'
+          Resource: '*'
+        - Effect: Allow
+          Action:
+            - 's3:*'
+          Resource:
+            - 'arn:aws:s3:::${param:ASSETS_BUCKET}/*'
+
+functions:
+  engine:
+    handler: handler.engine
+    memorySize: 10240
+    timeout: 300
+    environment:
+      PUSHER_APP_ID: ${param:PUSHER_APP_ID}
+      PUSHER_KEY: ${param:PUSHER_KEY}
+      PUSHER_SECRET: ${param:PUSHER_SECRET}
+  generate:
+    handler: handler.generate
+    environment:
+      engineFunctionName: generator-${sls:stage}-engine
+    events:
+      - httpApi:
+          path: /generate
+          method: put
+  upload:
+    handler: handler.upload
+    events:
+      - httpApi:
+          path: /upload
+          method: post
+  project:
+    handler: handler.project
+    events:
+      - httpApi:
+          path: /project
+          method: get
+      - httpApi:
+          path: /project
+          method: post
+
+plugins:
+  - serverless-plugin-typescript
