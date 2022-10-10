@@ -10,6 +10,7 @@ import {
 	ChevronRight,
 	Check,
 	Droplet,
+	EyeOff,
 } from 'react-feather'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
@@ -30,6 +31,7 @@ import {
 } from 'components/DropdownMenu'
 import Button, { Icon } from 'components/Button'
 import { Flex, Grid } from 'components/system'
+import Slider from 'components/Slider'
 
 import UploadDialog from 'modules/UploadDialog'
 
@@ -37,13 +39,7 @@ import { BlendMode } from 'lib/constants'
 import { useOut } from 'lib/context/out'
 import { getAssetUrl } from 'lib'
 
-import {
-	AssetImg,
-	StyledRange,
-	StyledSlider,
-	StyledThumb,
-	StyledTrack,
-} from './styled'
+import { AssetImg } from './styled'
 
 function Trait({
 	id,
@@ -66,6 +62,8 @@ function Trait({
 	const [{ value: assetKey }] = useField(
 		`projects.${project}.traits.${id}.assetKey`,
 	)
+	const [{ value: showInMetadata }, , { setValue: setShowInMetadata }] =
+		useField(`projects.${project}.traits.${id}.showInMetadata`)
 	const weightValueInt = parseInt(weightValue?.replace('%', ''))
 
 	const [traitPercentage] = useMemo(() => {
@@ -123,10 +121,23 @@ function Trait({
 								</DropdownMenuItem>
 							</DropdownMenuSubContent>
 						</DropdownMenuSub>
-
-						<DropdownMenuItem disabled>
-							<Eye />
-							{t('shownInMetadata')}
+						<DropdownMenuItem
+							onSelect={(event) => {
+								event.preventDefault()
+								setShowInMetadata(!showInMetadata)
+							}}
+						>
+							{showInMetadata ? (
+								<>
+									<Eye />
+									{t('shownInMetadata')}
+								</>
+							) : (
+								<>
+									<EyeOff />
+									{t('hiddenInMetadata')}
+								</>
+							)}
 						</DropdownMenuItem>
 						<DropdownMenuItem
 							onClick={() => {
@@ -144,17 +155,10 @@ function Trait({
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</Flex>
-			<StyledSlider
+			<Slider
 				onValueChange={([value]) => setValue(`${value}%`, true)}
 				value={[weightValueInt]}
-				max={100}
-				step={1}
-			>
-				<StyledTrack>
-					<StyledRange />
-				</StyledTrack>
-				<StyledThumb />
-			</StyledSlider>
+			/>
 			<p
 				style={{
 					opacity: 0.7,
@@ -186,6 +190,8 @@ function Attribute({
 	const [{ value: traits }, , { setValue }] = useField(
 		`projects.${projectId}.attributes.${id}.traits`,
 	)
+	const [{ value: showInMetadata }, , { setValue: setShowInMetadata }] =
+		useField(`projects.${projectId}.attributes.${id}.showInMetadata`)
 
 	return (
 		<Fragment>
@@ -207,9 +213,23 @@ function Attribute({
 								<Plus />
 								{t('addTraits')}
 							</DropdownMenuItem>
-							<DropdownMenuItem disabled>
-								<Eye />
-								{t('shownInMetadata')}
+							<DropdownMenuItem
+								onSelect={(event) => {
+									event.preventDefault()
+									setShowInMetadata(!showInMetadata)
+								}}
+							>
+								{showInMetadata ? (
+									<>
+										<Eye />
+										{t('shownInMetadata')}
+									</>
+								) : (
+									<>
+										<EyeOff />
+										{t('hiddenInMetadata')}
+									</>
+								)}
 							</DropdownMenuItem>
 							<DropdownMenuItem onClick={() => onDelete?.()}>
 								<Trash />
@@ -321,6 +341,7 @@ function Attributes() {
 				<UploadDialog
 					onClose={() => setIsAddingAttribute(false)}
 					onUpload={handleUpload}
+					isMultiple
 				/>
 			)}
 			<Flex

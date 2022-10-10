@@ -16,5 +16,6 @@ export function useOut(
 	projectId: string,
 ): [string[][] | null, (userConfig: UserConfig) => void] {
 	const data = useContext(OutContext)
+
 	return [data.out?.[projectId] ?? null, data.regenerate]
 }

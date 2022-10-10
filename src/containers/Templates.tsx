@@ -4,12 +4,13 @@ import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import update from 'immutability-helper'
 import { useAccount } from 'wagmi'
-import styled from 'styled-components'
+import styled from 'styled-components/macro'
 import { DndProvider, useDrag, useDrop } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { DragHandleDots2Icon } from '@radix-ui/react-icons'
 import { PlusCircle } from 'react-feather'
 import type { Identifier, XYCoord } from 'dnd-core'
+import { nanoid } from 'nanoid'
 
 import TokenPreview from 'modules/TokenPreview'
 
@@ -23,15 +24,21 @@ import type {
 	// Trait, Attribute
 } from 'lib/types'
 import { getAssetUrl } from 'lib'
+import Slider from 'components/Slider'
 
-const cardStyle = {
-	cursor: 'move',
-	marginBottom: 'var(--space--medium)',
-	display: 'flex',
-	position: 'relative',
-	backgroundColor: 'var(--colors--background_alternate)',
-	color: 'white',
-}
+const Card = styled(Button)<{ $enabled: boolean; $isDragging: boolean }>`
+	cursor: ${({ $enabled }) => ($enabled ? 'move' : 'inherit')};
+	margin-bottom: var(--space--medium);
+	display: flex;
+	position: relative;
+	background-color: var(--colors--background_alternate);
+	color: white;
+	border-radius: var(--border_radius--small);
+	align-items: center;
+	padding: 0 var(--space--large);
+	opacity: ${({ $enabled, $isDragging }) =>
+		$isDragging ? '0.5' : $enabled ? '1' : '0.7'};
+`
 
 const ImgContainer = styled.div`
 	height: 50px;
@@ -58,10 +65,12 @@ function AttributeItem({
 	moveItem,
 	image,
 	enabled,
+	onCheckedChange,
 }: {
-	id: any
+	id: string
 	text: string
 	index: number
+	onCheckedChange: (checked: boolean, id: string) => void
 	moveItem: (dragIndex: number, hoverIndex: number) => void
 	image: string
 	enabled: boolean
@@ -134,19 +143,14 @@ function AttributeItem({
 		}),
 	})
 
-	const opacity = isDragging ? 0 : 1
 	drag(drop(ref))
 
 	return (
-		<Button
+		<Card
 			as="div"
-			ref={ref}
-			style={
-				{
-					...cardStyle,
-					opacity,
-				} as any
-			}
+			$enabled={enabled}
+			$isDragging={isDragging}
+			ref={enabled ? ref : undefined}
 			data-handler-id={handlerId}
 		>
 			<Icon
@@ -171,10 +175,13 @@ function AttributeItem({
 					<img style={{ width: '100%', height: '100%' }} src={image} alt="" />
 				</ImgContainer>
 			</Flex>
-			<Switch checked={enabled} disabled>
+			<Switch
+				onCheckedChange={(checked) => onCheckedChange(checked, id)}
+				checked={enabled}
+			>
 				<SwitchThumb />
 			</Switch>
-		</Button>
+		</Card>
 	)
 }
 
@@ -197,7 +204,16 @@ function TemplateItem({
 	const [{ value: attributes }] = useField<Project['attributes']>(
 		`projects.${projectId}.attributes`,
 	)
+	const [{ value: weightValue }, , { setValue: setWeight }] = useField(
+		`projects.${projectId}.templates.${id}.weight`,
+	)
+	const weightValueInt = parseInt(weightValue?.replace('%', ''))
 	const [items, setItems] = useState<string[]>(template.attributes)
+	const allItems = items.concat(
+		Object.keys(attributes ?? {})
+			.map((key) => key)
+			.filter((key) => !items.includes(key)),
+	)
 
 	useEffect(() => {
 		const nextValue = { ...template, attributes: items }
@@ -219,13 +235,31 @@ function TemplateItem({
 		)
 	}, [])
 
-	// const allAttributeIds = Object.keys(attributes ?? {})
+	const handleCheckedChange = useCallback((checked: boolean, id: string) => {
+		if (!checked) {
+			setItems((prevItems: any) => {
+				const index = prevItems.indexOf(id)
+				if (index === -1) {
+					return [...prevItems, id]
+				}
+				return prevItems.filter((item: string) => item !== id)
+			})
+		} else {
+			setItems((prevItems: any) => {
+				const index = prevItems.indexOf(id)
+				if (index === -1) {
+					return [...prevItems, id]
+				}
+				return prevItems.filter((item: string) => item !== id)
+			})
+		}
+	}, [])
 
 	const renderCard = useCallback(
 		(item: string, index: number) => {
 			const [traitId] = attributes[item]?.traits ?? []
-			const { assetKey } = traits[traitId]
-			// const enabled = items.some((i) => i === item)
+			const { assetKey } = traits[traitId] ?? {}
+			const enabled = items.some((key) => key === item)
 
 			return (
 				<AttributeItem
@@ -233,14 +267,15 @@ function TemplateItem({
 					id={item}
 					index={index}
 					moveItem={moveItem}
-					enabled
-					text={attributes[item].name}
+					enabled={enabled}
+					onCheckedChange={handleCheckedChange}
+					text={attributes[item]?.name}
 					image={getAssetUrl(assetKey, { address, project: projectId })}
 				/>
 			)
 		},
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[],
+		[JSON.stringify(items)],
 	)
 
 	return (
@@ -253,12 +288,19 @@ function TemplateItem({
 			<label htmlFor="">
 				<input style={{ fontSize: '1.5rem' }} {...templateName} />
 			</label>
+			<Slider
+				onValueChange={([value]) => setWeight(`${value}%`, true)}
+				value={[weightValueInt]}
+			/>
 			<Grid gridTemplateColumns="1fr 1fr" gap="var(--space--large)">
 				<DndProvider backend={HTML5Backend}>
-					<div>{items.map((element, index) => renderCard(element, index))}</div>
+					<div>
+						{allItems.map((element, index) => renderCard(element, index))}
+					</div>
 				</DndProvider>
 				<TokenPreview
 					name=""
+					hasWarning={false}
 					number={0}
 					projectName=""
 					assets={items.map((attributeKey) => {
@@ -279,7 +321,21 @@ function Templates() {
 	const { projectId } = useParams()
 	const { address } = useAccount()
 
-	const [{ value: templates }] = useField(`projects.${projectId}.templates`)
+	const [{ value: templates }, , { setValue: setTemplates }] = useField(
+		`projects.${projectId}.templates`,
+	)
+
+	function handleAddTemplate() {
+		setTemplates({
+			...templates,
+			[nanoid()]: {
+				name: '',
+				weight: '100%',
+				showInMetadata: true,
+				attributes: [],
+			},
+		})
+	}
 
 	return (
 		<>
@@ -289,7 +345,7 @@ function Templates() {
 				alignItems="center"
 			>
 				<h2 style={{ margin: 0 }}>{t('templates')}</h2>
-				<Button disabled>
+				<Button onClick={handleAddTemplate}>
 					{t('addTemplate')}
 					<Icon as={PlusCircle} />
 				</Button>

@@ -1,95 +1,47 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { Edit, Eye, Settings as SettingsIcon } from 'react-feather'
+import { ChevronDown, Edit, Eye, Settings as SettingsIcon } from 'react-feather'
 import { useTranslation } from 'react-i18next'
-import { Link, NavLink, useLocation } from 'react-router-dom'
-import styled from 'styled-components/macro'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import * as AccessibleIcon from '@radix-ui/react-accessible-icon'
 
 import { Flex } from 'components/system'
-import { truncateMiddle } from 'lib'
+import {
+	Select,
+	SelectContent,
+	SelectIcon,
+	SelectItem,
+	SelectItemText,
+	SelectSeparator,
+	SelectTrigger,
+	SelectValue,
+	SelectViewport,
+} from 'components/Select'
 
-const NavList = styled.ul`
-	padding: 0 20px;
-	display: flex;
-	justify-content: center;
-	gap: 10px;
-	height: 100%;
-`
+import { useGetConfig } from 'lib/api'
 
-const Header = styled.div`
-	display: grid;
-	justify-content: space-between;
-	align-items: center;
-	padding: 0 10px;
-	font-size: 1rem;
-	grid-template-columns: repeat(3, 1fr);
-	border-bottom: 2px solid var(--colors--border);
-	font-family: SF Pro;
-
-	h1 {
-		font-weight: 900;
-		font-size: 1.5rem;
-	}
-
-	a {
-		display: inline-flex;
-		align-items: center;
-		text-decoration: none;
-		color: inherit;
-		min-height: 40px;
-		font-weight: 800;
-		height: 100%;
-		position: relative;
-
-		span {
-			gap: 8px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			padding: var(--space--medium) var(--space--large);
-			border-radius: 16px;
-			overflow: hidden;
-			opacity: 0.8;
-
-			&:hover {
-				background-color: var(--color--overlay_alternate);
-				opacity: 1;
-			}
-		}
-
-		&[aria-current='page'] {
-			span {
-				opacity: 1;
-			}
-			&:after {
-				content: '';
-				position: absolute;
-				bottom: -2px;
-				left: 0;
-				height: 3px;
-				width: 100%;
-				background-color: var(--colors--background_opposite);
-			}
-		}
-	}
-
-	&:nth-child(2) {
-		align-content: center;
-	}
-
-	&:nth-child(3) {
-		align-content: flex-end;
-	}
-`
+import * as Styled from './styled'
 
 function TopNav() {
 	const { t } = useTranslation()
 	const { pathname } = useLocation()
+	const navigate = useNavigate()
 
 	const [, projectId] = pathname.split('/')
+	// eslint-disable-next-line no-magic-numbers
+	const isProjectId = projectId.length === 21
+
+	const { data } = useGetConfig(localStorage.getItem('@mejor/signedMessage'), {
+		networkMode: 'offlineFirst',
+	})
+
+	const projects = Object.entries(data?.projects ?? {})
+
+	function handleSelectChange(value: string) {
+		navigate(`/${value}`)
+	}
 
 	return (
-		<Header>
+		<Styled.Header>
 			<Flex height="var(--size--top_nav)" alignItems="center" gap="8px">
 				<Link to="/">
 					<Flex
@@ -101,37 +53,59 @@ function TopNav() {
 						🖼 mejor{' '}
 						<span
 							style={{
-								backgroundColor: 'gray',
+								backgroundColor: 'var(--colors--pina)',
 								color: 'black',
 								borderRadius: 10,
 								padding: '2px 8px',
 								fontSize: '0.8rem',
+								lineHeight: '12px',
 							}}
 						>
 							BETA
 						</span>
 					</Flex>
 				</Link>
-				<span style={{ fontWeight: '800', opacity: 0.3, fontSize: '0.75rem' }}>
-					{/* eslint-disable-next-line no-magic-numbers */}
-					{truncateMiddle(projectId, 11)}
-				</span>
+				{isProjectId && (
+					<Select onValueChange={handleSelectChange} value={projectId}>
+						<SelectTrigger aria-label="Food">
+							<SelectValue placeholder="Select a fruit…" />
+							<SelectIcon>
+								<ChevronDown />
+							</SelectIcon>
+						</SelectTrigger>
+						<SelectContent>
+							<SelectViewport>
+								{projects.map(([key, { name }]) => (
+									<SelectItem key={key} value={key}>
+										<SelectItemText>{name}</SelectItemText>
+									</SelectItem>
+								))}
+								<SelectSeparator />
+								<SelectItem value="upload">
+									<SelectItemText>{t('newProject')}</SelectItemText>
+								</SelectItem>
+							</SelectViewport>
+						</SelectContent>
+					</Select>
+				)}
 			</Flex>
-			{projectId ? (
-				<NavList>
-					<NavLink to={`/${projectId}/token`}>
-						<span>
-							<Edit size={20} />
-							{t('settings')}
-						</span>
-					</NavLink>
-					<NavLink to={`/${projectId}/preview`}>
-						<span>
-							<Eye size={20} />
-							{t('preview')}
-						</span>
-					</NavLink>
-				</NavList>
+			{isProjectId ? (
+				<>
+					<Styled.NavList>
+						<NavLink to={`/${projectId}/token`}>
+							<span>
+								<Edit size={20} />
+								{t('settings')}
+							</span>
+						</NavLink>
+						<NavLink to={`/${projectId}/preview`}>
+							<span>
+								<Eye size={20} />
+								{t('preview')}
+							</span>
+						</NavLink>
+					</Styled.NavList>
+				</>
 			) : (
 				<span />
 			)}
@@ -152,7 +126,7 @@ function TopNav() {
 				{/* <Button>{t('donate')}</Button> */}
 				<ConnectButton chainStatus="none" showBalance={false} />
 			</Flex>
-		</Header>
+		</Styled.Header>
 	)
 }
 

@@ -56,7 +56,7 @@ export function getMaxCPUs(): number {
 export function getObjectParams(
 	address: string,
 	project: string,
-	fileName: string
+	fileName: string,
 ): PutObjectCommandInput {
 	return {
 		Bucket: ASSETS_BUCKET,
@@ -77,7 +77,7 @@ export function streamToBuffer(stream: Readable): Promise<Buffer> {
 export async function getObject(
 	bucket: string,
 	key: string,
-	shouldUseCache = true
+	shouldUseCache = true,
 ): Promise<Buffer> {
 	const cacheKey = `${bucket}:${key}`
 
@@ -91,7 +91,7 @@ export async function getObject(
 	}
 
 	const { Body } = await s3Client.send(
-		new GetObjectCommand({ Bucket: bucket, Key: key })
+		new GetObjectCommand({ Bucket: bucket, Key: key }),
 	)
 
 	const bufferBody = await streamToBuffer(Body as Readable)
@@ -104,7 +104,7 @@ export async function getObject(
 }
 
 export function getPresignedUrl(
-	params: PutObjectCommandInput
+	params: PutObjectCommandInput,
 ): Promise<string> {
 	return getSignedUrl(s3Client, new PutObjectCommand(params), {
 		expiresIn: 3600,
@@ -114,7 +114,7 @@ export function getPresignedUrl(
 export function jsonResponse(
 	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	body: any,
-	statusCode = HttpStatus.ok
+	statusCode = HttpStatus.ok,
 ): {
 	body: string
 	statusCode: number

@@ -8,9 +8,11 @@ import UploadZone from './UploadZone'
 function UploadDialog({
 	onUpload,
 	onClose,
+	isMultiple = true,
 }: {
 	onUpload: (files: any[]) => void
 	onClose: () => void
+	isMultiple: boolean
 }) {
 	const { t } = useTranslation()
 	const { projectId } = useParams()
@@ -19,7 +21,12 @@ function UploadDialog({
 		<Dialog onOpenChange={onClose} open>
 			<DialogContent>
 				<DialogTitle>{t('upload')}</DialogTitle>
-				<UploadZone projectId={projectId!} onUpload={onUpload} files />
+				<UploadZone
+					projectId={projectId!}
+					onUpload={onUpload}
+					isMultiple={isMultiple}
+					files
+				/>
 			</DialogContent>
 		</Dialog>
 	)

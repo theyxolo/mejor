@@ -1,4 +1,5 @@
 import styled from 'styled-components/macro'
+import { AlertTriangle } from 'react-feather'
 
 import { Box } from 'components/system'
 
@@ -30,7 +31,9 @@ const TokenContainer = styled.div`
 const TokenContent = styled(Box)`
 	display: block;
 	width: 100%;
-	background-color: gray;
+	background-image: var(--image--transparent);
+	background-size: 16px 16px;
+	background-position: 0 0, 8px 8px;
 	position: relative;
 	border-radius: var(--border_radius--small);
 	overflow: hidden;
@@ -43,13 +46,15 @@ function TokenPreview({
 	projectName,
 	name,
 	number,
+	hasWarning,
 }: {
 	address: string
 	assets: string[]
 	projectId: string
-	projectName: string
+	projectName?: string
 	name: string
-	number: number
+	number?: number
+	hasWarning?: boolean
 }) {
 	return (
 		<TokenContainer>
@@ -76,7 +81,15 @@ function TokenPreview({
 				<TokenName>
 					{name
 						?.replace('{{number}}', String(number))
-						.replace?.('{{project}}', projectName) ?? number}
+						.replace?.('{{project}}', projectName ?? '') ?? number}
+					{hasWarning && (
+						<AlertTriangle
+							size={16}
+							style={{ display: 'inline-block' }}
+							strokeWidth={3}
+							color="var(--colors--pina)"
+						/>
+					)}
 				</TokenName>
 			)}
 		</TokenContainer>

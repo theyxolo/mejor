@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { nanoid } from 'nanoid'
 import { useTranslation } from 'react-i18next'
+import { Folder } from 'react-feather'
 import ky from 'ky'
 
 import Loading from 'modules/Loading'
@@ -46,10 +47,12 @@ function UploadZone({
 	projectId,
 	onUpload,
 	files = false,
+	isMultiple = true,
 }: {
 	projectId: string
 	onUpload: (files: any[]) => void
 	files?: boolean
+	isMultiple?: boolean
 }) {
 	const { t } = useTranslation()
 
@@ -145,13 +148,15 @@ function UploadZone({
 		<label
 			style={{
 				border: isDragging ? '2px solid var(--colors--uva)' : '2px dotted #999',
-				borderRadius: 10,
+				borderRadius: 'var(--border_radius--large)',
 				minHeight: 200,
 				width: '100%',
 				display: 'flex',
 				justifyContent: 'center',
 				alignItems: 'center',
 				position: 'relative',
+				maxWidth: 800,
+				margin: '0 auto',
 			}}
 			onDragStart={() => undefined}
 			onDragEnd={() => setIsDragging(false)}
@@ -164,10 +169,23 @@ function UploadZone({
 			onDrop={handleDrop}
 			htmlFor="upload"
 		>
-			<p style={{ fontWeight: '800' }}>
+			<p
+				style={{
+					fontWeight: '800',
+					display: 'flex',
+					flexDirection: 'column',
+					alignItems: 'center',
+					gap: 16,
+				}}
+			>
 				{isDragging
-					? "Drop it like it's hot"
-					: 'Select or drop your folder here'}
+					? t('modules.upload.dropFiles')
+					: t(
+							files
+								? 'modules.upload.selectFiles'
+								: 'modules.upload.selectFile',
+					  )}
+				<Folder />
 			</p>
 			<input
 				id="upload"
@@ -179,9 +197,9 @@ function UploadZone({
 					top: 0,
 					left: 0,
 				}}
-				multiple
 				type="file"
 				autoComplete="off"
+				multiple={isMultiple}
 				onChange={handleSelectDirectory}
 				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 				// @ts-ignore

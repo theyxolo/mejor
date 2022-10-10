@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import * as Tabs from '@radix-ui/react-tabs'
-import { Grid, Image, List, Server, XOctagon } from 'react-feather'
+import { Award, Grid, Image, List, XOctagon } from 'react-feather'
 import styled from 'styled-components/macro'
 import { ErrorBoundary } from '@sentry/react'
 import { useLocation } from 'react-router'
@@ -9,17 +9,42 @@ import { Main } from 'GlobalStyled'
 
 import Attributes from 'containers/Attributes'
 import Token from 'containers/General'
-import Artwork from 'containers/Artwork'
+import CustomTokens from 'containers/CustomTokens'
 import Templates from 'containers/Templates'
 import Rules from 'containers/Rules'
 import Error from 'containers/Error'
 
 const TABS = [
-	{ label: 'attributes', icon: <Grid size={18} strokeWidth={2.5} /> },
-	{ label: 'templates', icon: <Server size={18} strokeWidth={2.5} /> },
-	{ label: 'collection', icon: <List size={18} strokeWidth={2.5} /> },
-	{ label: 'artwork', icon: <Image size={18} strokeWidth={2.5} /> },
-	{ label: 'rules', icon: <XOctagon size={18} strokeWidth={2.5} /> },
+	{
+		key: 'attributes',
+		icon: <Grid size={18} strokeWidth={2.5} />,
+		Component: Attributes,
+	},
+	// {
+	// 	key: 'artwork',
+	// 	icon: <Server size={18} strokeWidth={2.5} />,
+	// 	Component: Artwork,
+	// },
+	{
+		key: 'templates',
+		icon: <List size={18} strokeWidth={2.5} />,
+		Component: Templates,
+	},
+	{
+		key: 'token',
+		icon: <Image size={18} strokeWidth={2.5} />,
+		Component: Token,
+	},
+	{
+		key: 'rules',
+		icon: <XOctagon size={18} strokeWidth={2.5} />,
+		Component: Rules,
+	},
+	{
+		key: 'customTokens',
+		icon: <Award size={18} strokeWidth={2.5} />,
+		Component: CustomTokens,
+	},
 ]
 
 const TabItem = styled(Tabs.Trigger)`
@@ -85,46 +110,25 @@ function Configuration() {
 				style={{ display: 'flex', minHeight: 0 }}
 			>
 				<TabList>
-					{TABS.map((key) => (
-						<TabItem key={key.label} value={key.label}>
+					{TABS.map(({ key, icon }) => (
+						<TabItem key={key} value={key}>
 							<span>
-								{key.icon}
-								{t(key.label)}
+								{icon}
+								{t(key)}
 							</span>
 						</TabItem>
 					))}
 				</TabList>
 				<ErrorBoundary fallback={<Error />}>
-					<Tabs.Content
-						value="attributes"
-						style={{ padding: 10, flex: 1, overflow: 'scroll' }}
-					>
-						<Attributes />
-					</Tabs.Content>
-					<Tabs.Content
-						value="artwork"
-						style={{ padding: 10, flex: 1, overflow: 'scroll' }}
-					>
-						<Artwork />
-					</Tabs.Content>
-					<Tabs.Content
-						value="templates"
-						style={{ padding: 10, flex: 1, overflow: 'scroll' }}
-					>
-						<Templates />
-					</Tabs.Content>
-					<Tabs.Content
-						value="collection"
-						style={{ padding: 10, flex: 1, overflow: 'scroll' }}
-					>
-						<Token />
-					</Tabs.Content>
-					<Tabs.Content
-						value="rules"
-						style={{ padding: 10, flex: 1, overflow: 'scroll' }}
-					>
-						<Rules />
-					</Tabs.Content>
+					{TABS.map(({ key, Component }) => (
+						<Tabs.Content
+							key={key}
+							value={key}
+							style={{ padding: 10, flex: 1, overflow: 'scroll' }}
+						>
+							<Component />
+						</Tabs.Content>
+					))}
 				</ErrorBoundary>
 			</Tabs.Root>
 		</Main>

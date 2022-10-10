@@ -1,4 +1,4 @@
-import type { Project } from 'lib/types'
+import { Trait } from 'lib/types'
 import { ASSETS_BUCKET } from 'lib/constants'
 
 async function sha256(message: any) {
@@ -59,9 +59,7 @@ export function getAssetUrl(
 	return `https://${ASSETS_BUCKET}.s3.amazonaws.com/${address}/${project}/${key}`
 }
 
-export function getTokenConfig(
-	attributeTraits: { assetKey: string; weight: string | number }[][],
-): string[] {
+export function getTokenConfig(attributeTraits: Trait[][]): string[] {
 	const randNum = [] as string[]
 
 	attributeTraits.forEach((trait) => {
@@ -98,25 +96,6 @@ export function getTokenConfig(
 	})
 
 	return randNum
-}
-
-export function getOut(config: Project) {
-	const [template]: any = Object.values(config?.templates ?? {})
-	const attributes = template?.attributes.map(
-		(attributeId: string) => config.attributes[attributeId],
-	)
-
-	const assets = attributes.map(({ traits: traitIds }: any) =>
-		traitIds.map((traitId: string) => config.traits[traitId]),
-	)
-
-	const combinations: string[][] = []
-
-	while (combinations.length < config.count) {
-		combinations.push(getTokenConfig(assets))
-	}
-
-	return combinations
 }
 
 export function getAssetId(layers: any) {

@@ -8,6 +8,7 @@ const StyledSwitch = styled(SwitchPrimitive.Root)<{ disabled?: boolean }>`
 	background-color: black;
 	border-radius: 9999px;
 	position: relative;
+	cursor: default;
 
 	${({ disabled }) =>
 		disabled &&

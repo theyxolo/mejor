@@ -33,6 +33,15 @@ export const GlobalStyle = createGlobalStyle`
 		--space--xxlarge: 64px;
 
 		--size--top_nav: 56px;
+
+		--image--transparent: linear-gradient(
+				45deg,
+				#222 25%,
+				transparent 0,
+				transparent 75%,
+				#222 0
+			),
+			linear-gradient(45deg, #222 25%, transparent 0, transparent 75%, #222 0);
 	}
 
 	* {
@@ -96,6 +105,11 @@ export const GlobalStyle = createGlobalStyle`
 	label b {
 		font-weight: 800;
 		width: 100%;
+	}
+
+	a {
+		color: inherit;
+		text-decoration: none;
 	}
 
 	p b {

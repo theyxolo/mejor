@@ -8,6 +8,7 @@ import { Upload } from '@aws-sdk/lib-storage'
 import type { CarReader } from '@ipld/car/api'
 import Pusher from 'pusher'
 import { FormatEnum } from 'sharp'
+import type { CID } from 'nft.storage/dist/src/lib/interface'
 
 const pusher = new Pusher({
 	appId: process.env.PUSHER_APP_ID,
@@ -41,7 +42,7 @@ const handler = async (
 		hash: string
 	},
 	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-	context: any
+	context: any,
 ): Promise<any> => {
 	const { hash, address, project: projectId, nftStorageToken } = event
 
@@ -52,7 +53,7 @@ const handler = async (
 	const stringData = await getObject(
 		ASSETS_BUCKET,
 		`${address}/config.json`,
-		false
+		false,
 	)
 
 	const data = JSON.parse(stringData.toString()) as UserConfig
@@ -71,8 +72,8 @@ const handler = async (
 	// We would want to prefetch all images, so we can cache them
 	await Promise.all(
 		uniqueAssets.map((image) =>
-			getObject(ASSETS_BUCKET, `${address}/${projectId}/${image}`)
-		)
+			getObject(ASSETS_BUCKET, `${address}/${projectId}/${image}`),
+		),
 	)
 
 	const maxConcurrent = getMaxCPUs()
@@ -86,8 +87,8 @@ const handler = async (
 			// This will get the images from the cache
 			const imageBuffers = await Promise.all(
 				traits.map((image: string) =>
-					getObject(ASSETS_BUCKET, `${address}/${projectId}/${image}`)
-				)
+					getObject(ASSETS_BUCKET, `${address}/${projectId}/${image}`),
+				),
 			)
 
 			// TODO: use shared memory
@@ -113,15 +114,16 @@ const handler = async (
 		const progress = Math.floor(
 			// Only send values from 0 to 10
 			// eslint-disable-next-line no-magic-numbers
-			((combinations.length - remaining) / combinations.length) * 10
+			((combinations.length - remaining) / combinations.length) * 10,
 		)
 
 		if (progress <= lastProgress) return
 
 		lastProgress = progress
 
-		pusher.trigger(hash, 'generate--image', {
-			progress,
+		pusher.trigger(hash, 'generated--image', {
+			// eslint-disable-next-line no-magic-numbers
+			progress: progress * 10,
 			remaining: queue.size,
 		})
 	})
@@ -138,11 +140,11 @@ const handler = async (
 		images.push(
 			new File([image], `${key}.${artworkFormat}`, {
 				type: `image/${artworkFormat}`,
-			})
-		)
+			}),
+		),
 	)
 
-	let imagesCID: unknown
+	let imagesCID: CID
 	let imagesCAR: CarReader
 	await context.span('encode images car', async () => {
 		if (nftstorage) {
@@ -152,43 +154,48 @@ const handler = async (
 		}
 	})
 
-	assets.forEach(({ image }, key) => {
+	assets.forEach(({ image }, index) => {
 		// Generate metadata
 		const metadata = {
 			name: project.metadata?.name
-				?.replace('{{number}}', String(key))
+				?.replace('{{number}}', String(index))
 				.replace?.('{{project}}', project.name),
 			description: project.metadata?.description?.replace(
 				'{{number}}',
-				String(key)
+				String(index),
 			),
 			external_url: project.metadata?.externalUrl?.replace(
 				'{{number}}',
-				String(key)
+				String(index),
 			),
-			image: imagesCID ? `ipfs://${imagesCID}/${key}.${artworkFormat}` : '',
-			attributes: combinations[key].map((assetUrl) => {
+			image: imagesCID ? `ipfs://${imagesCID}/${index}.${artworkFormat}` : '',
+			attributes: combinations[index].map((assetUrl) => {
 				const assetKey = assetUrl.replace(/\.[^/.]+$/, '')
 
+				const traitType = Object.values(project.attributes).find((attribute) =>
+					attribute.traits.includes(assetKey),
+				)?.name
+				const traitValue = project.traits[assetKey]?.name
+
+				//
+				if (!traitType) return { value: traitValue }
+
 				return {
-					trait_type:
-						Object.values(project.attributes).find((attribute) =>
-							attribute.traits.includes(assetKey)
-						)?.name ?? 'No attribute name',
-					value: project.traits[assetKey]?.name ?? 'No trait name',
+					trait_type: traitType,
+					value: traitValue ?? 'No trait name',
 				}
 			}),
 		}
 
 		// eslint-disable-next-line no-magic-numbers
-		assets.set(key, { image, metadata: JSON.stringify(metadata, null, 2) })
+		assets.set(index, { image, metadata: JSON.stringify(metadata, null, 2) })
 	})
 
 	const metadata = []
-	assets.forEach(({ metadata: metaString }, key) =>
+	assets.forEach(({ metadata: metaString }, index) =>
 		metadata.push(
-			new File(metaString, `${key}.json`, { type: 'application/json' })
-		)
+			new File(metaString, `${index}.json`, { type: 'application/json' }),
+		),
 	)
 
 	let metadataCID: unknown
@@ -209,7 +216,12 @@ const handler = async (
 		])
 	})
 
-	pusher.trigger(hash, 'generate--cid', { metadataCID, metadataCAR })
+	if (nftstorage) {
+		pusher.trigger(hash, 'uploaded--car', {
+			assets: imagesCID.toString(),
+			metadata: metadataCID.toString(),
+		})
+	}
 
 	// Create ZIP
 	assets.forEach((value, key) => {
@@ -227,6 +239,11 @@ const handler = async (
 		})
 		.pipe(passThrough)
 
+	pusher.trigger(hash, 'started--zip', {
+		imagesCID,
+		metadataCID,
+	})
+
 	const multipartUpload = new Upload({
 		client: s3Client,
 		queueSize: maxConcurrent,
@@ -240,6 +257,11 @@ const handler = async (
 	})
 
 	await multipartUpload.done()
+
+	pusher.trigger(hash, 'uploaded--zip', {
+		imagesCID,
+		metadataCID,
+	})
 }
 
 export default handler

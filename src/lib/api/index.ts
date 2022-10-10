@@ -12,13 +12,14 @@ import { API_HOST } from 'lib/constants'
 
 export function useGetConfig(
 	signature?: string | null,
-	options?: UseQueryOptions<any, Error, any, ['config']>,
+	options?: UseQueryOptions<any, Error, UserConfig, ['config', string]>,
 ) {
-	return useQuery(
-		['config'],
-		() => ky.get(`${API_HOST}/project?signature=${signature}`).json(),
-		options,
-	)
+	return useQuery({
+		queryKey: ['config', signature as string],
+		queryFn: () => ky.get(`${API_HOST}/project?signature=${signature}`).json(),
+		networkMode: options?.networkMode ?? 'always',
+		...options,
+	})
 }
 
 export function useUpdateConfig() {
@@ -37,7 +38,10 @@ export function useUpdateConfig() {
 				)
 				.json(),
 		onSuccess(data) {
-			queryClient.setQueryData(['config'], JSON.parse(data as any))
+			queryClient.setQueryData(
+				['config', localStorage.getItem('@mejor/signedMessage')],
+				JSON.parse(data as any),
+			)
 		},
 	})
 }

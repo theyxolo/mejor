@@ -92,13 +92,16 @@ function Settings() {
 
 			<hr />
 
-			<h3 style={{ marginTop: 16 }}>{t('credits')}</h3>
+			<h3 style={{ margin: 'var(--space--large) 0' }}>{t('credits')}</h3>
 
-			<p style={{ fontWeight: '800', marginBottom: 8 }}>
+			<p style={{ fontWeight: '800', marginBottom: 'var(--space--large)' }}>
 				Made with <i>Mucho Cariño</i> by{' '}
 				<a style={{ color: 'inherit' }} href="https://theyxolo.art">
 					TheyXolo
 				</a>
+			</p>
+			<p style={{ fontWeight: '800' }}>
+				<a href="https://theyxolo.art/licenses">{t('licenses')}</a>
 			</p>
 		</Main>
 	)

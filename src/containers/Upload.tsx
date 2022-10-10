@@ -35,7 +35,6 @@ function Upload() {
 					name: attributeName,
 					blendMode: BlendMode.normal,
 					showInMetadata: true,
-					weight: '100%',
 					traits: traits.map(({ id }: any) => id),
 				},
 			],
@@ -51,39 +50,37 @@ function Upload() {
 			},
 		])
 
-		await setFieldValue(
-			'projects',
-			{
-				...((values as any)?.projects ?? {}),
-				[projectId]: {
-					name: projectId,
-					owner: address,
-					count: 1000,
-					metadata: {
-						// eslint-disable-next-line no-magic-numbers
-						symbol: projectId.slice(0, 3).toUpperCase(),
-						name: `{{project}} #{{number}}`,
-					},
-					artwork: {
-						dimensions: 1200,
-						format: 'png',
-					},
-					rules: [],
-					traits: Object.fromEntries(traitsList),
-					attributes: Object.fromEntries(attributesList),
-					customTokens: [],
-					templates: {
-						[nanoid()]: {
-							name: 'default',
-							weight: '100%',
-							showInMetadata: true,
-							attributes: attributesList.map(([id]) => id),
-						},
+		const newProjects = {
+			...((values as any)?.projects ?? {}),
+			[projectId]: {
+				name: projectId,
+				owner: address,
+				count: 1000,
+				metadata: {
+					// eslint-disable-next-line no-magic-numbers
+					symbol: projectId.slice(0, 3).toUpperCase(),
+					name: `{{project}} #{{number}}`,
+				},
+				artwork: {
+					dimensions: 1200,
+					format: 'png',
+				},
+				rules: [],
+				traits: Object.fromEntries(traitsList),
+				attributes: Object.fromEntries(attributesList),
+				customTokens: [],
+				templates: {
+					[nanoid()]: {
+						name: 'default',
+						weight: '100%',
+						showInMetadata: true,
+						attributes: attributesList.map(([id]) => id),
 					},
 				},
 			},
-			true,
-		)
+		}
+
+		await setFieldValue('projects', newProjects, true)
 
 		navigate(`/${projectId}`)
 	}

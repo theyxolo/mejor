@@ -15,11 +15,11 @@ import { Main as StyledMain } from 'GlobalStyled'
 
 import Loading from 'modules/Loading'
 
-import type { UserConfig, Project } from 'lib/types'
+import type { UserConfig } from 'lib/types'
 import { useGetConfig, useUpdateConfig } from 'lib/api'
 import { capture, identify } from 'lib/analytics'
 import { OutContext, type OutConfig } from 'lib/context/out'
-import { getOut } from 'lib'
+import { getOut } from 'lib/combinationsEngine'
 
 import Routes from './Routes'
 
@@ -69,9 +69,13 @@ function App() {
 
 	const updateConfig = useUpdateConfig()
 	const { data: configData, isFetching } = useGetConfig(signedMessage, {
+		cacheTime: 0,
+		staleTime: 0,
 		enabled: Boolean(signedMessage),
 		onSuccess(data) {
-			if (data?.out) setOut({ regeneratedAt: null, out: data.out })
+			if (data?.out) {
+				setOut({ regeneratedAt: null, out: data.out })
+			}
 		},
 	})
 
@@ -95,13 +99,13 @@ function App() {
 			const out = Object.fromEntries(
 				Object.entries(values.projects).map(([projectId, project]) => [
 					projectId,
-					getOut(project as Project),
+					getOut(project),
 				]),
 			)
 
 			setOut({ regeneratedAt: new Date(), out })
 
-			if (mutate) await updateConfig.mutateAsync({ ...configData, out })
+			if (mutate) await updateConfig.mutateAsync({ ...configData, out } as any)
 
 			// TODO: update server config
 			return out
@@ -113,7 +117,9 @@ function App() {
 	const handleChange = useCallback(
 		debounce(async (newValues: UserConfig) => {
 			const out = await regenerateOut(newValues, false)
-			await updateConfig.mutateAsync({ ...newValues, out })
+			const newConfig = { ...newValues, out }
+
+			await updateConfig.mutateAsync(newConfig as any)
 		}, DEBOUNCE_DELAY),
 		[],
 	)
@@ -179,7 +185,7 @@ function App() {
 				value={{ out: outState.out, regenerate: regenerateOut }}
 			>
 				<Formik
-					initialValues={userConfig ?? initialValues}
+					initialValues={(userConfig as any) ?? initialValues}
 					onSubmit={handleChange}
 					validate={handleChange}
 					validateOnChange={false}

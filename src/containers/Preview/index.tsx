@@ -1,8 +1,8 @@
-import { useMemo, useRef, useState } from 'react'
+import { MouseEventHandler, useMemo, useRef, useState } from 'react'
 import { useField, useFormikContext } from 'formik'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
-import { DownloadCloud, RefreshCw } from 'react-feather'
+import { AlertTriangle, RefreshCw, UploadCloud } from 'react-feather'
 import { VirtuosoGrid } from 'react-virtuoso'
 import styled from 'styled-components/macro'
 import createKeccakHash from 'keccak'
@@ -10,7 +10,8 @@ import { useAccount } from 'wagmi'
 
 import TokenPreview from 'modules/TokenPreview'
 
-import Button from 'components/Button'
+import Button, { Icon } from 'components/Button'
+import { Flex } from 'components/system'
 
 import type { UserConfig } from 'lib/types'
 import { useOut } from 'lib/context/out'
@@ -34,13 +35,38 @@ const ListContainer = styled.div`
 	}
 `
 
+const PreviewContent = styled.div`
+	min-height: 0;
+	overflow: auto;
+	padding: 0;
+`
+
+const Actions = styled.div`
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px;
+`
+
+function getOutDuplicates(array: string[][]) {
+	const jsonOut = array.map((item) => JSON.stringify(item))
+
+	// Get duplicate items
+	const count = {} as Record<string, number>
+	jsonOut.forEach((item) => {
+		count[item] = count[item] + 1 || 1
+	})
+	const duplicates = Object.keys(count).filter((item) => count[item] > 1)
+	return duplicates
+}
+
 function Preview() {
 	const { t } = useTranslation()
 	const { address } = useAccount()
 	const parentRef = useRef()
 	const { projectId } = useParams()
 
-	const [isExporting, setIsExporting] = useState(false)
+	const [isExporting, setIsExporting] = useState<'ipfs' | boolean>(false)
 
 	const { values } = useFormikContext<UserConfig>()
 	const [{ value: project }] = useField(`projects.${projectId}`)
@@ -53,8 +79,10 @@ function Preview() {
 		regenerate?.(values)
 	}
 
-	function handleExport() {
-		setIsExporting(true)
+	function handleExport(
+		type: 'ipfs' | MouseEventHandler<any> | undefined | void,
+	) {
+		setIsExporting(typeof type === 'string' ? type : true)
 	}
 
 	const exportKey = useMemo(() => {
@@ -63,6 +91,8 @@ function Preview() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [out?.toString()])
 
+	const duplicates = getOutDuplicates(out ?? [])
+
 	return (
 		<>
 			{isExporting && (
@@ -70,6 +100,7 @@ function Preview() {
 					exportKey={exportKey}
 					project={projectId!}
 					address={address!}
+					uploadTo={typeof isExporting === 'string' ? isExporting : undefined}
 					onOpenChange={(open) => setIsExporting(open)}
 					total={out?.length ?? 0}
 					open
@@ -82,16 +113,18 @@ function Preview() {
 					gridTemplateRows: 'auto 1fr',
 				}}
 			>
-				<div
-					style={{
-						display: 'flex',
-						justifyContent: 'space-between',
-						alignItems: 'center',
-						padding: '10px',
-					}}
-				>
-					<h2 style={{ margin: 0 }}>{t('preview')}</h2>
-					<div style={{ display: 'flex', gap: 12 }}>
+				<Actions>
+					<Flex alignItems="center" gap="var(--space--small)">
+						<h2 style={{ margin: 0 }}>{t('preview')}</h2>
+						{duplicates.length > 0 && (
+							<Icon
+								strokeWidth={3}
+								as={AlertTriangle}
+								color="var(--colors--pina)"
+							/>
+						)}
+					</Flex>
+					<Flex gap="var(--space--medium)">
 						<Link
 							style={{
 								display: 'flex',
@@ -114,24 +147,24 @@ function Preview() {
 							/>
 						</Button>
 						{out && (
-							<Button onClick={handleExport} primary>
+							<Button
+								onClick={handleExport}
+								options={[
+									{
+										label: t('exportAndUploadToIPFS'),
+										onClick: () => handleExport('ipfs'),
+										icon: <UploadCloud size={14} strokeWidth={2.5} />,
+										disabled: !localStorage.getItem('@mejor/nftStorageKey'),
+									},
+								]}
+								primary
+							>
 								{t('export')}
-								<DownloadCloud
-									size={14}
-									strokeWidth={2.5}
-									style={{ marginLeft: 4 }}
-								/>
 							</Button>
 						)}
-					</div>
-				</div>
-				<div
-					style={{
-						minHeight: 0,
-						overflow: 'auto',
-						padding: '0',
-					}}
-				>
+					</Flex>
+				</Actions>
+				<PreviewContent>
 					{out && out?.length && (
 						<VirtuosoGrid
 							style={{ height: '100%' }}
@@ -143,13 +176,14 @@ function Preview() {
 									assets={out[index]}
 									projectId={projectId!}
 									projectName={project.name}
-									number={index}
+									number={index + 1}
 									name={tokenName}
+									hasWarning={duplicates.includes(JSON.stringify(out[index]))}
 								/>
 							)}
 						/>
 					)}
-				</div>
+				</PreviewContent>
 			</Main>
 		</>
 	)

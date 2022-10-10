@@ -7,6 +7,11 @@ export type Trait = {
 	assetKey: string
 }
 
+export enum Rule {
+	DoesNotMixWith = 'does-not-mix-with',
+	OnlyMixesWith = 'only-mixes-with',
+}
+
 export type Template = {
 	name: string
 	weight: string
@@ -43,7 +48,17 @@ export type Project = {
 		dimensions: number
 		format: string
 	}
-	rules: any[]
+	rules: [
+		/**
+		 * Affected trait
+		 */
+		string,
+		Rule,
+		/**
+		 * Linked trait
+		 * */
+		string,
+	][]
 	traits: {
 		[traitId: string]: Trait
 	}

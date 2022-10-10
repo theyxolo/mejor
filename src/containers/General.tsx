@@ -45,6 +45,28 @@ function Token() {
 
 			<hr />
 
+			<h2>{t('artwork')}</h2>
+			<Flex gap="var(--space--medium)" flexDirection="column" maxWidth="600px">
+				<label htmlFor="">
+					<b>{t('dimensions')}</b>
+					<input
+						type="number"
+						{...getFieldProps(`projects.${projectId}.artwork.dimensions`)}
+					/>
+				</label>
+				<label htmlFor="">
+					<b>{t('format')}</b>
+					<select {...getFieldProps(`projects.${projectId}.artwork.format`)}>
+						<option value="">{t('useInput')}</option>
+						<option value="png">PNG</option>
+						<option value="jpeg">JPEG</option>
+						<option value="webp">WebP</option>
+					</select>
+				</label>
+			</Flex>
+
+			<hr />
+
 			<h2>{t('metadata')}</h2>
 			<h3>{t('token')}</h3>
 			<Flex gap="var(--space--medium)" flexDirection="column" maxWidth="600px">

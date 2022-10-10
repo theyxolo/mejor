@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
-import { DownloadCloud } from 'react-feather'
+import { CheckCircle, DownloadCloud } from 'react-feather'
 import { useQuery } from 'wagmi'
 import Pusher from 'pusher-js'
 import ky from 'ky'
 
 import { Dialog, DialogContent, DialogTitle } from 'components/Dialog'
 import { Progress, ProgressIndicator } from 'components/Progress'
-import Button from 'components/Button'
+import Button, { Icon } from 'components/Button'
 import Spinner from 'components/Spinner'
 import { Flex } from 'components/system'
 
@@ -28,6 +28,7 @@ function ExportDialog({
 	project,
 	exportKey,
 	onOpenChange,
+	uploadTo,
 }: {
 	open: boolean
 	total: number
@@ -35,8 +36,12 @@ function ExportDialog({
 	project: string
 	exportKey: string
 	onOpenChange: (open: boolean) => void
+	uploadTo?: 'ipfs'
 }) {
 	const exportUrl = `https://${ASSETS_BUCKET}.s3.amazonaws.com/${address}/${project}/${exportKey}.zip`
+	const [cids, setCids] = useState<{ assets: string; metadata: string } | null>(
+		null,
+	)
 	const [progress, setProgress] = useState<{
 		percentage: null | number
 		remaining: null | number
@@ -52,7 +57,10 @@ function ExportDialog({
 					json: {
 						project,
 						signedMessage: localStorage.getItem('@mejor/signedMessage'),
-						nftStorageToken: '',
+						nftStorageToken:
+							uploadTo === 'ipfs'
+								? localStorage.getItem('@mejor/nftStorageKey')
+								: undefined,
 						hash: exportKey,
 					},
 				})
@@ -88,16 +96,24 @@ function ExportDialog({
 		const channel = pusher.subscribe(exportKey)
 
 		channel.bind(
-			'generate--image',
+			'generated--image',
 			(data = { progress: null, remaining: null }) => {
+				if (!data) return
 				const { progress, remaining } = data
 				if (!progress) return
 				setProgress({
 					// We are sending only values from 0 to 10, so we need to multiply by 10
 					// eslint-disable-next-line no-magic-numbers
-					percentage: progress * 10,
+					percentage: progress,
 					remaining,
 				})
+			},
+		)
+		channel.bind(
+			'uploaded--car',
+			(data: { assets: string; metadata: string }) => {
+				if (!data) return
+				setCids(data)
 			},
 		)
 
@@ -117,7 +133,7 @@ function ExportDialog({
 		onOpenChange(false)
 	}
 
-	const isComplete = exportQuery.isSuccess
+	const hasZip = exportQuery.isSuccess
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -141,7 +157,29 @@ function ExportDialog({
 					flexDirection="column"
 					alignItems="center"
 				>
-					{isComplete ? (
+					{cids ? (
+						<Flex
+							alignItems="center"
+							flexDirection="column"
+							gap="var(--space--large)"
+						>
+							<p>
+								<b style={{ display: 'block' }}>Assets CID</b>
+								{cids.assets}
+							</p>
+							<p>
+								<b style={{ display: 'block' }}>Metadata CID</b>
+								{cids.metadata}
+							</p>
+							<Button
+								style={{ minHeight: 40 }}
+								onClick={() => onOpenChange(false)}
+							>
+								{t('done')}
+								<Icon as={CheckCircle} />
+							</Button>
+						</Flex>
+					) : hasZip ? (
 						<Button
 							as="a"
 							style={{ minHeight: 40 }}
@@ -150,8 +188,8 @@ function ExportDialog({
 							download
 							primary
 						>
-							<DownloadCloud style={{ marginRight: 8 }} size={20} />
 							{t('downloadExport')}
+							<Icon as={DownloadCloud} />
 						</Button>
 					) : // eslint-disable-next-line no-magic-numbers
 					exportMutation.isLoading || progress.percentage === 100 ? (
