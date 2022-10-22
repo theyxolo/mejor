@@ -32,6 +32,7 @@ function TopNav() {
 
 	const { data } = useGetConfig(localStorage.getItem('@mejor/signedMessage'), {
 		networkMode: 'offlineFirst',
+		enabled: Boolean(localStorage.getItem('@mejor/signedMessage')),
 	})
 
 	const projects = Object.entries(data?.projects ?? {})

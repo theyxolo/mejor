@@ -21,12 +21,29 @@ const pusher = new Pusher({
 import { getObject, getMaxCPUs, s3Client, ASSETS_BUCKET } from './utils'
 import './generateTokenAssets'
 
+type BlendMode = 'normal' | 'multiply'
+
+type Trait = {
+	name: string
+	weight: string
+	showInMetadata: boolean
+	assetKey: string
+}
+
+type Attribute = {
+	name: string
+	weight: string
+	blendMode: BlendMode
+	showInMetadata: boolean
+	traits: string[]
+}
+
 type UserConfig = {
 	projects: {
 		[projectId: string]: {
 			name: string
-			traits: { [key: string]: { name: string } }
-			attributes: { [key: string]: { name: string; traits: string[] } }
+			traits: { [key: string]: Trait }
+			attributes: { [key: string]: Attribute }
 			metadata: { [key: string]: string }
 			artwork: { format: keyof FormatEnum; dimensions: number }
 		}
@@ -169,22 +186,32 @@ const handler = async (
 				String(index),
 			),
 			image: imagesCID ? `ipfs://${imagesCID}/${index}.${artworkFormat}` : '',
-			attributes: combinations[index].map((assetUrl) => {
-				const assetKey = assetUrl.replace(/\.[^/.]+$/, '')
+			attributes: combinations[index]
+				.filter((assetUrl) => {
+					const assetKey = assetUrl.replace(/\.[^/.]+$/, '')
+					const trait = project.traits[assetKey]
+					const attribute = Object.values(project.attributes).find(
+						(attribute) => attribute.traits.includes(assetKey),
+					)
 
-				const traitType = Object.values(project.attributes).find((attribute) =>
-					attribute.traits.includes(assetKey),
-				)?.name
-				const traitValue = project.traits[assetKey]?.name
+					return trait.showInMetadata && attribute.showInMetadata
+				})
+				.map((assetUrl) => {
+					const assetKey = assetUrl.replace(/\.[^/.]+$/, '')
 
-				//
-				if (!traitType) return { value: traitValue }
+					const traitType = Object.values(project.attributes).find(
+						(attribute) => attribute.traits.includes(assetKey),
+					)?.name
+					const traitValue = project.traits[assetKey]?.name
 
-				return {
-					trait_type: traitType,
-					value: traitValue ?? 'No trait name',
-				}
-			}),
+					//
+					if (!traitType) return { value: traitValue }
+
+					return {
+						trait_type: traitType,
+						value: traitValue ?? 'No trait name',
+					}
+				}),
 		}
 
 		// eslint-disable-next-line no-magic-numbers
