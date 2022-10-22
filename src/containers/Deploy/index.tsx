@@ -138,9 +138,7 @@ function Deploy() {
 					/> */}
 				</Grid>
 				<Flex justifyContent="center">
-					<Button onClick={() => deploy()} type="submit">
-						{t('deploy')}
-					</Button>
+					<Button type="submit">{t('deploy')}</Button>
 				</Flex>
 			</form>
 
