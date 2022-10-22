@@ -1,5 +1,11 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { ChevronDown, Edit, Eye, Settings as SettingsIcon } from 'react-feather'
+import {
+	Eye,
+	Edit,
+	ChevronDown,
+	CloudLightning,
+	Settings as SettingsIcon,
+} from 'react-feather'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import * as AccessibleIcon from '@radix-ui/react-accessible-icon'
@@ -104,6 +110,12 @@ function TopNav() {
 							<span>
 								<Eye size={20} />
 								{t('preview')}
+							</span>
+						</NavLink>
+						<NavLink to={`/${projectId}/deploy`}>
+							<span>
+								<CloudLightning size={20} />
+								{t('deploy')}
 							</span>
 						</NavLink>
 					</Styled.NavList>

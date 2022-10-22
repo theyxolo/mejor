@@ -2,7 +2,10 @@ function TextInput({
 	label,
 	style,
 	...props
-}: { label?: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+}: {
+	label?: string
+	multiline?: boolean
+} & React.InputHTMLAttributes<HTMLInputElement>) {
 	if (!label) {
 		return <input {...props} type="text" />
 	}

@@ -8,7 +8,8 @@ export const GlobalStyle = createGlobalStyle`
 		--color--overlay_alternate: rgba(255, 255, 255, 0.1);
 		--colors--background_alternate: #222;
 		--colors--background_opposite: #fff;
-		--colors--border: #292929;
+		--colors--border: #393939;
+		--colors--border_alternate: #222;
 		--colors--text: #fff;
 		--colors--text_opposite: #000;
 
@@ -121,7 +122,7 @@ export const GlobalStyle = createGlobalStyle`
 	select {
 		min-height: 30px;
 		padding: 5px 10px;
-		border: 1px solid var(--colors--border);
+		border: 2px solid var(--colors--border);
 		border-radius: 10px;
 		width: auto;
 		min-width: 0;
@@ -139,6 +140,14 @@ export const GlobalStyle = createGlobalStyle`
 	input[type="number"] {
 		font-family: SFRounded, ui-rounded, SF Pro Rounded, system-ui, Helvetica Neue,
 			Arial, Helvetica, sans-serif;
+
+		&[readonly] {
+			border-color: var(--colors--border_alternate);
+		}
+		&:focus {
+			outline: none;
+			border-color: var(--colors--pina);
+		}
 	}
 `
 

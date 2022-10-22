@@ -15,6 +15,7 @@ const Preview = lazy(() => import('containers/Preview'))
 const Upload = lazy(() => import('containers/Upload'))
 const Settings = lazy(() => import('containers/Settings'))
 const Error = lazy(() => import('containers/Error'))
+const Deploy = lazy(() => import('containers/Deploy'))
 
 function Routes() {
 	const [{ value: projects }] = useField('projects')
@@ -36,6 +37,7 @@ function Routes() {
 			>
 				<Route path="token" element={<Configuration />} />
 				<Route path="preview" element={<Preview />} />
+				<Route path="deploy" element={<Deploy />} />
 				<Route path="settings" element={<Settings />} />
 				<Route index element={<Navigate to="token" replace={true} />} />
 			</Route>
