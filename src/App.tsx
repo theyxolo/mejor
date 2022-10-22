@@ -71,6 +71,7 @@ function App() {
 	const { data: configData, isFetching } = useGetConfig(signedMessage, {
 		cacheTime: 0,
 		staleTime: 0,
+		refetchOnWindowFocus: false,
 		enabled: Boolean(signedMessage),
 		onSuccess(data) {
 			if (data?.out) {
