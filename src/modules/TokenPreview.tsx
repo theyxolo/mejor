@@ -52,7 +52,7 @@ function TokenPreview({
 	assets: string[]
 	projectId: string
 	projectName?: string
-	name: string
+	name?: string
 	number?: number
 	hasWarning?: boolean
 }) {

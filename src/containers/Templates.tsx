@@ -194,6 +194,8 @@ function TemplateItem({
 	projectId: string
 	id: string
 }) {
+	const { t } = useTranslation()
+
 	const [{ value: template }, , { setValue }] = useField<Template>(
 		`projects.${projectId}.templates.${id}`,
 	)
@@ -288,10 +290,22 @@ function TemplateItem({
 			<label htmlFor="">
 				<input style={{ fontSize: '1.5rem' }} {...templateName} />
 			</label>
-			<Slider
-				onValueChange={([value]) => setWeight(`${value}%`, true)}
-				value={[weightValueInt]}
-			/>
+			<Flex gap="var(--space--medium)">
+				{/* <label htmlFor="">
+					<b>{t('count')}</b>
+					<input style={{ fontSize: '1.5rem' }} {...templateCount} />
+				</label> */}
+				<div style={{ flex: 1 }}>
+					<label style={{ flex: 1 }} htmlFor="">
+						<b>{t('weight')}</b>
+						<Slider
+							onValueChange={([value]) => setWeight(`${value}%`, true)}
+							value={[weightValueInt]}
+						/>
+					</label>
+					<p>{t('actual')} %</p>
+				</div>
+			</Flex>
 			<Grid gridTemplateColumns="1fr 1fr" gap="var(--space--large)">
 				<DndProvider backend={HTML5Backend}>
 					<div>

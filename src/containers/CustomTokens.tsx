@@ -33,25 +33,36 @@ function CustomTokenItem({
 	const [{ value: traits }] = useField<Project['traits']>(
 		`projects.${projectId}.traits`,
 	)
-	const [{ value: name }] = useField(
-		`projects.${projectId}.customTokens.${id}.name`,
-	)
 	const [{ value: tokenTraits }, , { setValue: setTokenTraits }] = useField<
 		CustomToken['traits']
 	>(`projects.${projectId}.customTokens.${id}.traits`)
 
 	return (
-		<>
-			<Grid gap="var(--space--large)" gridTemplateColumns="3fr 1fr" key={id}>
-				<div>
-					<TextInput
-						label={t('name')}
-						{...getFieldProps(`projects.${projectId}.customTokens.${id}.name`)}
-					/>
-					<p style={{ marginTop: 'var(--space--medium)' }}>
-						<b>{t('traits')}</b>
-					</p>
-					{/* <Grid
+		<Flex gap="var(--space--large)" flexDirection="column" key={id}>
+			<Flex style={{ flex: 1 }} gap="var(--space--medium)">
+				<TextInput
+					style={{ flex: 1 }}
+					label={t('name')}
+					{...getFieldProps(`projects.${projectId}.customTokens.${id}.name`)}
+				/>
+				<button onClick={() => onRemove(id)}>
+					<MinusCircle />
+				</button>
+			</Flex>
+			<Flex flexDirection="column" gap="var(--space--medium)">
+				<TokenPreview
+					assets={tokenTraits.map((key) => {
+						const { assetKey } = traits[key] ?? {}
+						return assetKey
+					})}
+					address={address!}
+					projectId={projectId!}
+				/>
+			</Flex>
+			<p style={{ marginTop: 'var(--space--medium)' }}>
+				<b>{t('traits')}</b>
+			</p>
+			{/* <Grid
 							gridTemplateColumns="1fr 1fr auto"
 							gap="var(--space--medium)"
 							key={index}
@@ -77,32 +88,14 @@ function CustomTokenItem({
 								<MinusCircle strokeWidth={3} />
 							</button>
 						</Grid> */}
-					<Button
-						style={{ marginTop: 'var(--space--medium)' }}
-						onClick={() => setTokenTraits([...tokenTraits, ''])}
-					>
-						{t('addTrait')}
-						<Icon as={PlusCircle} />
-					</Button>
-				</div>
-				<Flex flexDirection="column" gap="var(--space--medium)">
-					<TokenPreview
-						assets={tokenTraits.map((key) => {
-							const { assetKey } = traits[key] ?? {}
-							return assetKey
-						})}
-						name={name}
-						address={address!}
-						projectId={projectId!}
-					/>
-					<Flex>
-						<button onClick={() => onRemove(id)}>
-							<MinusCircle />
-						</button>
-					</Flex>
-				</Flex>
-			</Grid>
-		</>
+			<Button
+				style={{ marginTop: 'var(--space--medium)' }}
+				onClick={() => setTokenTraits([...tokenTraits, ''])}
+			>
+				{t('addTrait')}
+				<Icon as={PlusCircle} />
+			</Button>
+		</Flex>
 	)
 }
 
@@ -184,7 +177,10 @@ function CustomTokens() {
 			</Flex>
 
 			{customTokensArray.length ? (
-				<Grid gap="var(--space--large)" maxWidth="800px">
+				<Grid
+					gridTemplateColumns="repeat(auto-fit, minmax(150px, 1fr))"
+					gap="var(--space--large)"
+				>
 					{customTokensArray.map(([id]) => (
 						<CustomTokenItem
 							id={id}

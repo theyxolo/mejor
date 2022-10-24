@@ -14,7 +14,8 @@ export enum Rule {
 
 export type Template = {
 	name: string
-	weight: string
+	weight?: string
+	count?: number
 	showInMetadata: boolean
 	attributes: string[]
 }
@@ -26,6 +27,7 @@ export type CustomToken = {
 
 export type Attribute = {
 	name: string
+	alias?: string
 	weight: string
 	blendMode: BlendMode
 	showInMetadata: boolean

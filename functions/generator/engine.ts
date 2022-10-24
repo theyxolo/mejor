@@ -32,6 +32,7 @@ type Trait = {
 
 type Attribute = {
 	name: string
+	alias: string
 	weight: string
 	blendMode: BlendMode
 	showInMetadata: boolean
@@ -153,9 +154,9 @@ const handler = async (
 	// Create CAR for images
 	//
 	const images = []
-	assets.forEach(({ image }, key) =>
+	assets.forEach(({ image }, index) =>
 		images.push(
-			new File([image], `${key}.${artworkFormat}`, {
+			new File([image], `${index + 1}.${artworkFormat}`, {
 				type: `image/${artworkFormat}`,
 			}),
 		),
@@ -175,17 +176,21 @@ const handler = async (
 		// Generate metadata
 		const metadata = {
 			name: project.metadata?.name
-				?.replace('{{number}}', String(index))
+				?.replace('{{number}}', String(index + 1))
 				.replace?.('{{project}}', project.name),
 			description: project.metadata?.description?.replace(
 				'{{number}}',
-				String(index),
+				String(index + 1),
 			),
 			external_url: project.metadata?.externalUrl?.replace(
 				'{{number}}',
-				String(index),
+				String(index + 1),
 			),
-			image: imagesCID ? `ipfs://${imagesCID}/${index}.${artworkFormat}` : '',
+			edition: index + 1,
+			compiler: 'Mejor by They Xolo',
+			image: imagesCID
+				? `ipfs://${imagesCID}/${index + 1}.${artworkFormat}`
+				: '',
 			attributes: combinations[index]
 				.filter((assetUrl) => {
 					const assetKey = assetUrl.replace(/\.[^/.]+$/, '')
@@ -199,17 +204,18 @@ const handler = async (
 				.map((assetUrl) => {
 					const assetKey = assetUrl.replace(/\.[^/.]+$/, '')
 
-					const traitType = Object.values(project.attributes).find(
-						(attribute) => attribute.traits.includes(assetKey),
-					)?.name
+					const trait = Object.values(project.attributes).find((attribute) =>
+						attribute.traits.includes(assetKey),
+					)
+					const traitTypeName = trait?.alias ?? trait?.name
 					const traitValue = project.traits[assetKey]?.name
 
 					//
-					if (!traitType) return { value: traitValue }
+					if (!traitTypeName) return { value: traitValue }
 
 					return {
-						trait_type: traitType,
-						value: traitValue ?? 'No trait name',
+						trait_type: traitTypeName,
+						value: traitValue ?? true,
 					}
 				}),
 		}
@@ -221,7 +227,7 @@ const handler = async (
 	const metadata = []
 	assets.forEach(({ metadata: metaString }, index) =>
 		metadata.push(
-			new File(metaString, `${index}.json`, { type: 'application/json' }),
+			new File(metaString, `${index + 1}.json`, { type: 'application/json' }),
 		),
 	)
 
@@ -251,9 +257,9 @@ const handler = async (
 	}
 
 	// Create ZIP
-	assets.forEach((value, key) => {
-		zip.file(`${projectId}/assets/${key}.${artworkFormat}`, value.image)
-		zip.file(`${projectId}/metadata/${key}.json`, value.metadata)
+	assets.forEach((value, index) => {
+		zip.file(`${projectId}/assets/${index + 1}.${artworkFormat}`, value.image)
+		zip.file(`${projectId}/metadata/${index + 1}.json`, value.metadata)
 	})
 
 	const passThrough = new PassThrough()

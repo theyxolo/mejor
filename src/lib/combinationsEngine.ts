@@ -7,12 +7,15 @@ function getWeightedRandom(items: any[], existingWeights?: number[]) {
 		items.map((item) => Number(String(item.weight).replace('%', '')))
 
 	let i
-
-	for (i = 0; i < weights.length; i++) weights[i] += weights[i - 1] || 0
+	for (i = 0; i < weights.length; i++) {
+		weights[i] += weights[i - 1] || 0
+	}
 
 	const random = Math.random() * weights[weights.length - 1]
 
-	for (i = 0; i < weights.length; i++) if (weights[i] > random) break
+	for (i = 0; i < weights.length; i++) {
+		if (weights[i] > random) break
+	}
 
 	return items[i]
 }
@@ -61,9 +64,9 @@ export function getOut(config: Project) {
 
 			if (rule) {
 				if (rule === Rule.DoesNotMixWith) {
-					// filteredTraits = filteredTraits.filter(
-					// 	(trait) => trait !== ruleToApply[2] || trait !== ruleToApply[0],
-					// )
+					filteredTraits = filteredTraits.filter(
+						(traitId) => traitId !== baseTrait,
+					)
 				} else if (rule === Rule.OnlyMixesWith) {
 					filteredTraits = filteredTraits.filter(
 						(traitId) => traitId === baseTrait,

@@ -4,13 +4,14 @@ import {
 	Eye,
 	Plus,
 	Trash,
-	Shuffle,
 	MoreHorizontal,
 	PlusCircle,
 	ChevronRight,
 	Check,
 	Droplet,
 	EyeOff,
+	RotateCcw,
+	RefreshCw,
 } from 'react-feather'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
@@ -37,6 +38,7 @@ import UploadDialog from 'modules/UploadDialog'
 
 import { BlendMode } from 'lib/constants'
 import { useOut } from 'lib/context/out'
+import { Project } from 'lib/types'
 import { getAssetUrl } from 'lib'
 
 import { AssetImg } from './styled'
@@ -46,16 +48,21 @@ function Trait({
 	project,
 	address,
 	onDelete,
+	attributeId,
 }: {
 	id: string
 	project: string
 	address: string
 	onDelete?: () => void
+	attributeId: string
 }) {
 	const { t } = useTranslation()
 	const { getFieldProps, setFieldValue } = useFormikContext()
 
 	const [out] = useOut(project)
+	const [{ value: attributes }] = useField<Project['attributes']>(
+		`projects.${project}.attributes`,
+	)
 	const [{ value: weightValue }, , { setValue }] = useField(
 		`projects.${project}.traits.${id}.weight`,
 	)
@@ -79,6 +86,25 @@ function Trait({
 		]
 	}, [out, id])
 
+	function handleChangeAttribute({
+		trait,
+		from,
+		to,
+	}: {
+		trait: string
+		from: string
+		to: string
+	}) {
+		setFieldValue(
+			`projects.${project}.attributes.${to}.traits`,
+			attributes[to].traits.concat(trait),
+		)
+		setFieldValue(
+			`projects.${project}.attributes.${from}.traits`,
+			attributes[from].traits.filter((t: string) => t !== trait),
+		)
+	}
+
 	return (
 		<Flex flexDirection="column" gap="var(--space--medium)">
 			{assetKey && (
@@ -100,9 +126,31 @@ function Trait({
 					</DropdownMenuTrigger>
 					<DropdownMenuContent sideOffset={5}>
 						<DropdownMenuItem disabled>
-							<Shuffle />
+							<RotateCcw />
 							{t('replace')}
 						</DropdownMenuItem>
+						<DropdownMenuSub>
+							<DropdownMenuSubTrigger>
+								<RefreshCw />
+								{t('move')}
+							</DropdownMenuSubTrigger>
+							<DropdownMenuSubContent sideOffset={2} alignOffset={-5}>
+								{Object.entries(attributes ?? {}).map(([key, value]) => (
+									<DropdownMenuItem
+										onSelect={() =>
+											handleChangeAttribute({
+												trait: id,
+												from: attributeId,
+												to: key,
+											})
+										}
+										key={key}
+									>
+										{value?.name}
+									</DropdownMenuItem>
+								))}
+							</DropdownMenuSubContent>
+						</DropdownMenuSub>
 						<DropdownMenuSub>
 							<DropdownMenuSubTrigger>
 								<Droplet />
@@ -196,52 +244,67 @@ function Attribute({
 	return (
 		<Fragment>
 			<Flex justifyContent="space-between" alignItems="center">
-				<div style={{ gap: 8, display: 'flex', alignItems: 'center' }}>
+				<div
+					style={{
+						gap: 8,
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'space-between',
+					}}
+				>
 					<input
 						style={{ fontSize: '1.5rem' }}
 						type="text"
 						{...getFieldProps(`projects.${projectId}.attributes.${id}.name`)}
 					/>
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button style={{ width: 40, height: 40, padding: 0 }}>
-								<MoreHorizontal size={16} />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent sideOffset={5}>
-							<DropdownMenuItem onSelect={onAdd}>
-								<Plus />
-								{t('addTraits')}
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onSelect={(event) => {
-									event.preventDefault()
-									setShowInMetadata(!showInMetadata)
-								}}
-							>
-								{showInMetadata ? (
-									<>
-										<Eye />
-										{t('shownInMetadata')}
-									</>
-								) : (
-									<>
-										<EyeOff />
-										{t('hiddenInMetadata')}
-									</>
-								)}
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => onDelete?.()}>
-								<Trash />
-								{t('delete')}
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<label htmlFor="">
+						<b>Alias</b>
+						<input
+							type="text"
+							style={{ width: '100%', display: 'block' }}
+							{...getFieldProps(`projects.${projectId}.attributes.${id}.alias`)}
+						/>
+					</label>
 				</div>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button style={{ width: 40, height: 40, padding: 0 }}>
+							<MoreHorizontal size={16} />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent sideOffset={5}>
+						<DropdownMenuItem onSelect={onAdd}>
+							<Plus />
+							{t('addTraits')}
+						</DropdownMenuItem>
+						<DropdownMenuItem
+							onSelect={(event) => {
+								event.preventDefault()
+								setShowInMetadata(!showInMetadata)
+							}}
+						>
+							{showInMetadata ? (
+								<>
+									<Eye />
+									{t('shownInMetadata')}
+								</>
+							) : (
+								<>
+									<EyeOff />
+									{t('hiddenInMetadata')}
+								</>
+							)}
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => onDelete?.()}>
+							<Trash />
+							{t('delete')}
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
 			</Flex>
 			<Grid
 				gap="var(--space--large)"
-				gridTemplateColumns="repeat(auto-fill, minmax(200px, 1fr))"
+				gridTemplateColumns="repeat(auto-fill, minmax(150px, 1fr))"
 			>
 				{traits?.map((traitId: string) => (
 					<Trait
@@ -254,6 +317,7 @@ function Attribute({
 								true,
 							)
 						}
+						attributeId={id}
 						id={traitId}
 					/>
 				))}

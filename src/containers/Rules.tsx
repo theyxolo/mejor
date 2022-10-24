@@ -1,4 +1,5 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
+import { Fragment } from 'react'
 import { useField } from 'formik'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, MinusCircle, XCircle } from 'react-feather'
@@ -100,7 +101,7 @@ function Rules() {
 				gap="var(--space--medium)"
 			>
 				{value.map((_, index) => (
-					<>
+					<Fragment key={index}>
 						<Select
 							onValueChange={(value) =>
 								handleSelectChange(value, index, 'first')
@@ -160,7 +161,12 @@ function Rules() {
 										<SelectItem key={key} value={value}>
 											<SelectItemText asChild>
 												<Flex gap="var(--space--small)" alignItems="center">
-													<XCircle />
+													<XCircle
+														style={{
+															color:
+																value === Rule.OnlyMixesWith ? 'green' : 'red',
+														}}
+													/>
 													{t(`rules.${value}`)}
 												</Flex>
 											</SelectItemText>
@@ -217,7 +223,7 @@ function Rules() {
 						>
 							<MinusCircle strokeWidth={3} />
 						</button>
-					</>
+					</Fragment>
 				))}
 			</Grid>
 		</>

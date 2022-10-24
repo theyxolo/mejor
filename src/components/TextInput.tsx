@@ -1,5 +1,6 @@
 function TextInput({
 	label,
+	style,
 	...props
 }: { label?: string } & React.InputHTMLAttributes<HTMLInputElement>) {
 	if (!label) {
@@ -7,7 +8,7 @@ function TextInput({
 	}
 
 	return (
-		<label htmlFor="">
+		<label style={style} htmlFor="">
 			<b>{label}</b>
 			<input {...props} type="text" />
 		</label>
