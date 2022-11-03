@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import {
 	AlertTriangle,
 	ChevronDown,
+	EyeOff,
 	RefreshCw,
 	UploadCloud,
 } from 'react-feather'
@@ -62,6 +63,10 @@ const Actions = styled.div`
 	grid-column: 1 / -1;
 `
 
+const HiddenInMetadataIcon = () => (
+	<EyeOff height={12} width={12} style={{ marginLeft: 4 }} strokeWidth={4} />
+)
+
 function AttributesFilter({
 	filters,
 	setFilters,
@@ -98,7 +103,11 @@ function AttributesFilter({
 									alignItems="center"
 									justifyContent="space-between"
 								>
-									{value.name}
+									{/* eslint-disable-next-line no-magic-numbers */}
+									<p style={{ opacity: value.showInMetadata ? 1 : 0.7 }}>
+										{value.name}
+										{!value.showInMetadata && <HiddenInMetadataIcon />}
+									</p>
 									<ChevronDown />
 								</Flex>
 							</CollapsibleTrigger>
@@ -115,7 +124,7 @@ function AttributesFilter({
 													trait,
 													JSON.stringify(combinations).match(
 														new RegExp(trait, 'g'),
-													)?.length,
+													)?.length ?? 0,
 												] as const,
 										)
 										.sort((a, b) => Number(a[1]) - Number(b[1]))
@@ -124,10 +133,6 @@ function AttributesFilter({
 												<Flex
 													flexDirection="row"
 													alignItems="center"
-													style={{
-														// eslint-disable-next-line no-magic-numbers
-														opacity: traits[trait!].showInMetadata ? 1 : 0.3,
-													}}
 													justifyContent="space-between"
 												>
 													<Flex
@@ -141,14 +146,27 @@ function AttributesFilter({
 																	: [...prev, trait],
 															)
 														}
+														htmlFor={trait}
 													>
 														<input
 															type="checkbox"
 															key={String(filters.includes(trait))}
 															checked={filters.includes(trait!)}
+															id={trait}
 														/>
-														<p style={{ fontWeight: '700' }}>
+														<p
+															style={{
+																fontWeight: '700',
+																opacity: traits[trait!].showInMetadata
+																	? 1
+																	: // eslint-disable-next-line no-magic-numbers
+																	  0.7,
+															}}
+														>
 															{traits[trait!].name}
+															{!traits[trait!].showInMetadata && (
+																<HiddenInMetadataIcon />
+															)}
 														</p>
 													</Flex>
 													<p style={{ opacity: 0.7 }}>{count}</p>
