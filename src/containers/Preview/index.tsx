@@ -62,7 +62,13 @@ const Actions = styled.div`
 	grid-column: 1 / -1;
 `
 
-function AttributesFilter() {
+function AttributesFilter({
+	filters,
+	setFilters,
+}: {
+	filters: string[]
+	setFilters: (filters: string[] | ((prev: string[]) => string[])) => void
+}) {
 	const attributes = useFieldValue<Project['attributes']>('attributes')
 	const traits = useFieldValue<Project['traits']>('traits')
 	const combinations = useFieldValue<string[][]>('export.combinations')
@@ -103,11 +109,15 @@ function AttributesFilter() {
 									style={{ padding: '0 10px 10px' }}
 								>
 									{value.traits
-										.map((trait) => [
-											trait,
-											JSON.stringify(combinations).match(new RegExp(trait, 'g'))
-												?.length,
-										])
+										.map(
+											(trait) =>
+												[
+													trait,
+													JSON.stringify(combinations).match(
+														new RegExp(trait, 'g'),
+													)?.length,
+												] as const,
+										)
 										.sort((a, b) => Number(a[1]) - Number(b[1]))
 										.map(([trait, count]) => (
 											<li key={trait}>
@@ -124,7 +134,19 @@ function AttributesFilter() {
 														as="label"
 														flexDirection="row"
 														alignItems="center"
+														onClick={() =>
+															setFilters((prev = []) =>
+																prev.includes(trait)
+																	? prev.filter((f) => f !== trait)
+																	: [...prev, trait],
+															)
+														}
 													>
+														<input
+															type="checkbox"
+															key={String(filters.includes(trait))}
+															checked={filters.includes(trait!)}
+														/>
 														<p style={{ fontWeight: '700' }}>
 															{traits[trait!].name}
 														</p>
@@ -162,9 +184,22 @@ function Preview() {
 	const { projectId } = useParams()
 
 	const [isExporting, setIsExporting] = useState<'ipfs' | boolean>(false)
+	const [filters, setFilters] = useState<string[]>([])
 
 	const regenerate = useRegenerate()
 	const combinations = useFieldValue<string[][]>('export.combinations')
+
+	const filteredCombinations = useMemo(
+		() =>
+			filters.length > 0
+				? combinations.filter((combination) =>
+						filters.every((filter) =>
+							combination.some((comb) => comb.includes(filter)),
+						),
+				  )
+				: combinations,
+		[combinations, filters],
+	)
 	const tokenName = useFieldValue<string>('metadata.name')
 	const projectName = useFieldValue<string>('name')
 
@@ -260,17 +295,17 @@ function Preview() {
 						)}
 					</Flex>
 				</Actions>
-				<AttributesFilter />
+				<AttributesFilter filters={filters} setFilters={setFilters} />
 				<PreviewContent>
 					{combinations && combinations?.length && (
 						<VirtuosoGrid
 							style={{ height: '100%' }}
-							totalCount={combinations.length}
+							totalCount={filteredCombinations.length}
 							components={{ List: ListContainer }}
 							itemContent={(index) => (
 								<TokenPreview
 									address={address!}
-									assets={combinations[index]}
+									assets={filteredCombinations[index]}
 									projectId={projectId!}
 									projectName={projectName}
 									number={index + 1}

@@ -50,27 +50,30 @@ export function getOut(config: Omit<Project, 'export'>) {
 			traitIds.map((traitId) => traitId),
 		)
 
-		let currentComb = ''
-
-		assetGroups.forEach((groupTraits) => {
-			let filteredTraits = groupTraits
+		let nextCombination = ''
+		assetGroups.forEach((nextTraits) => {
+			let filteredTraits = nextTraits
 			// Filter asset group by rules
-			const [baseTrait, rule] =
-				rules.find(([baseTrait, , affectedTrait]) => {
-					return (
-						currentComb.includes(affectedTrait) &&
-						groupTraits.includes(baseTrait)
-					)
-				}) ?? []
 
-			if (rule) {
-				if (rule === Rule.DoesNotMixWith) {
-					filteredTraits = filteredTraits.filter(
-						(traitId) => traitId !== baseTrait,
-					)
-				} else if (rule === Rule.OnlyMixesWith) {
-					filteredTraits = filteredTraits.filter(
-						(traitId) => traitId === baseTrait,
+			if (nextCombination) {
+				const matchingRules = rules.filter(
+					([baseTrait, , affectedTrait]) =>
+						(nextCombination.includes(affectedTrait) &&
+							nextTraits.includes(baseTrait)) ||
+						(nextCombination.includes(baseTrait) &&
+							nextTraits.includes(affectedTrait)),
+				)
+
+				if (matchingRules.length) {
+					const traitsToCompare = nextCombination.includes(matchingRules[0][0])
+						? matchingRules.map(([, , affectedTrait]) => affectedTrait)
+						: matchingRules.map(([baseTrait]) => baseTrait)
+
+					filteredTraits = filteredTraits.filter((traitId) =>
+						matchingRules[0][1] === Rule.DoesNotMixWith
+							? !traitsToCompare.includes(traitId)
+							: // Only mixes with
+							  traitsToCompare.includes(traitId),
 					)
 				}
 			}
@@ -80,17 +83,20 @@ export function getOut(config: Omit<Project, 'export'>) {
 			)
 			const nextAsset = getWeightedRandom(filteredTraits, weights)
 
-			currentComb = `${currentComb}${currentComb ? `,` : ''}${nextAsset}`
+			nextCombination = `${nextCombination}${
+				nextCombination ? `,` : ''
+			}${nextAsset}`
 		})
 
 		// If there's not an existing one already, push to the output
-		if (!combinations.find((traitGroup) => traitGroup === currentComb)) {
-			combinations.push(currentComb)
+		if (!combinations.find((traitGroup) => traitGroup === nextCombination)) {
+			combinations.push(nextCombination)
 		}
 	}
 
+	// Shuffle combinations so custom tokens are not always first
 	const outAssetKeys = shuffleArray(combinations).map((o) =>
-		o.split(',').map((traitId: string) => traits[traitId].assetKey),
+		o.split(',').map((traitId: string) => traits[traitId]?.assetKey),
 	)
 
 	return outAssetKeys

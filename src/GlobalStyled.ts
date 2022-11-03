@@ -166,6 +166,25 @@ export const GlobalStyle = createGlobalStyle`
 			border-color: var(--colors--pina);
 		}
 	}
+
+	input[type="checkbox"] {
+		appearance: none;
+		border: 2px solid var(--colors--border);
+		border-radius: 4px;
+		width: 20px;
+		height: 20px;
+		display: inline-block;
+		vertical-align: middle;
+		margin-right: 10px;
+		&:checked {
+			background-color: var(--colors--pina);
+			border-color: var(--colors--pina);
+		}
+		&:focus {
+			outline: none;
+			border-color: var(--colors--pina);
+		}
+	}
 `
 
 export const Main = styled.main<{ withPadding?: boolean; center?: boolean }>`
