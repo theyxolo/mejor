@@ -6,14 +6,14 @@ import { useFieldProps } from 'lib/recoil'
 function Token() {
 	const { t } = useTranslation()
 
-	const countProps = useFieldProps('count')
-	const nameProps = useFieldProps('name')
-	const symbolProps = useFieldProps('metadata.symbol')
-	const artworkDimensionsProps = useFieldProps('artwork.dimensions')
-	const artworkFormatProps = useFieldProps('artwork.format')
-	const externalUrlProps = useFieldProps('metadata.externalUrl')
-	const descriptionProps = useFieldProps('metadata.description')
-	const metadataNameProps = useFieldProps('metadata.name')
+	const countProps = useFieldProps<string>('count')
+	const nameProps = useFieldProps<string>('name')
+	const symbolProps = useFieldProps<string>('metadata.symbol')
+	const artworkDimensionsProps = useFieldProps<string>('artwork.dimensions')
+	const artworkFormatProps = useFieldProps<string>('artwork.format')
+	const externalUrlProps = useFieldProps<string>('metadata.externalUrl')
+	const descriptionProps = useFieldProps<string>('metadata.description')
+	const metadataNameProps = useFieldProps<string>('metadata.name')
 
 	return (
 		<>
@@ -58,7 +58,7 @@ function Token() {
 				</label>
 				<label htmlFor="">
 					<b>{t('format')}</b>
-					<select {...artworkFormatProps}>
+					<select {...(artworkFormatProps as any)}>
 						<option value="">{t('useInput')}</option>
 						<option value="png">PNG</option>
 						<option value="jpeg">JPEG</option>
