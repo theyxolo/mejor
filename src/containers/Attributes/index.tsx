@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import { Fragment, useMemo, useState } from 'react'
-import { useField, useFormikContext } from 'formik'
 import {
 	Eye,
 	Plus,
@@ -12,6 +12,7 @@ import {
 	EyeOff,
 	RotateCcw,
 	RefreshCw,
+	Download,
 } from 'react-feather'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
@@ -36,10 +37,15 @@ import Slider from 'components/Slider'
 
 import UploadDialog from 'modules/UploadDialog'
 
-import { BlendMode } from 'lib/constants'
-import { useOut } from 'lib/context/out'
-import { Project } from 'lib/types'
+import {
+	useField,
+	useFieldProps,
+	useFieldValue,
+	useSetFieldsValue,
+} from 'lib/recoil'
 import { getAssetUrl } from 'lib'
+import { BlendMode, MICRO_ID } from 'lib/constants'
+import { Attribute, Project } from 'lib/types'
 
 import { AssetImg } from './styled'
 
@@ -49,42 +55,40 @@ function Trait({
 	address,
 	onDelete,
 	attributeId,
+	onReplace,
 }: {
 	id: string
 	project: string
 	address: string
 	onDelete?: () => void
 	attributeId: string
+	onReplace?: (traitId: string) => void
 }) {
 	const { t } = useTranslation()
-	const { getFieldProps, setFieldValue } = useFormikContext()
+	const setFieldsValue = useSetFieldsValue()
 
-	const [out] = useOut(project)
-	const [{ value: attributes }] = useField<Project['attributes']>(
-		`projects.${project}.attributes`,
+	const combinations = useFieldValue<string[][]>('export.combinations')
+	const attributes = useFieldValue<Project['attributes']>('attributes')
+	const [weightValue, setValue] = useField<string>(`traits.${id}.weight`)
+	const assetKey = useFieldValue<string>(`traits.${id}.assetKey`)
+	const [showInMetadata, setShowInMetadata] = useField<boolean>(
+		`traits.${id}.showInMetadata`,
 	)
-	const [{ value: weightValue }, , { setValue }] = useField(
-		`projects.${project}.traits.${id}.weight`,
-	)
-	const [{ value: assetKey }] = useField(
-		`projects.${project}.traits.${id}.assetKey`,
-	)
-	const [{ value: showInMetadata }, , { setValue: setShowInMetadata }] =
-		useField(`projects.${project}.traits.${id}.showInMetadata`)
+	const traitNameProps = useFieldProps<string>(`traits.${id}.name`)
 	const weightValueInt = parseInt(weightValue?.replace('%', ''))
 
 	const [traitPercentage] = useMemo(() => {
-		const totalCount = out?.length
-		const appearancesCount = out
+		const totalCount = combinations?.length
+		const appearancesCount = combinations
 			?.flat()
 			.filter((trait: string) => trait.includes(id)).length
 
 		return [
 			// eslint-disable-next-line no-magic-numbers
-			Math.round(((appearancesCount ?? 0) / (totalCount ?? 0)) * 100),
+			Math.round(((appearancesCount ?? 0) / (totalCount ?? 0)) * 1000) / 10,
 			appearancesCount,
 		]
-	}, [out, id])
+	}, [id, combinations])
 
 	function handleChangeAttribute({
 		trait,
@@ -95,12 +99,12 @@ function Trait({
 		from: string
 		to: string
 	}) {
-		setFieldValue(
-			`projects.${project}.attributes.${to}.traits`,
+		setFieldsValue(
+			`attributes.${to}.traits`,
 			attributes[to].traits.concat(trait),
 		)
-		setFieldValue(
-			`projects.${project}.attributes.${from}.traits`,
+		setFieldsValue(
+			`attributes.${from}.traits`,
 			attributes[from].traits.filter((t: string) => t !== trait),
 		)
 	}
@@ -114,7 +118,7 @@ function Trait({
 				<input
 					type="text"
 					style={{ width: '100%', display: 'block' }}
-					{...getFieldProps(`projects.${project}.traits.${id}.name`)}
+					{...traitNameProps}
 				/>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
@@ -125,7 +129,10 @@ function Trait({
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent sideOffset={5}>
-						<DropdownMenuItem disabled>
+						<DropdownMenuItem
+							disabled={!onReplace}
+							onSelect={() => onReplace?.(id)}
+						>
 							<RotateCcw />
 							{t('replace')}
 						</DropdownMenuItem>
@@ -133,9 +140,12 @@ function Trait({
 							<DropdownMenuSubTrigger>
 								<RefreshCw />
 								{t('move')}
+								<RightSlot>
+									<ChevronRight />
+								</RightSlot>
 							</DropdownMenuSubTrigger>
 							<DropdownMenuSubContent sideOffset={2} alignOffset={-5}>
-								{Object.entries(attributes ?? {}).map(([key, value]) => (
+								{Object.entries(attributes ?? {}).map(([key, value]: any) => (
 									<DropdownMenuItem
 										onSelect={() =>
 											handleChangeAttribute({
@@ -188,13 +198,17 @@ function Trait({
 							)}
 						</DropdownMenuItem>
 						<DropdownMenuItem
-							onClick={() => {
+							as="a"
+							href={getAssetUrl(assetKey, { address, project })}
+							download
+						>
+							<Download />
+							{t('download')}
+						</DropdownMenuItem>
+						<DropdownMenuItem
+							onSelect={() => {
 								onDelete?.()
-								setFieldValue(
-									`projects.${project}.traits.${id}`,
-									undefined,
-									true,
-								)
+								setFieldsValue(`traits.${id}`, undefined)
 							}}
 						>
 							<Trash />
@@ -204,7 +218,7 @@ function Trait({
 				</DropdownMenu>
 			</Flex>
 			<Slider
-				onValueChange={([value]) => setValue(`${value}%`, true)}
+				onValueChange={([value]) => setValue(`${value}%`)}
 				value={[weightValueInt]}
 			/>
 			<p
@@ -221,25 +235,35 @@ function Trait({
 	)
 }
 
-function Attribute({
+function AttributeItem({
 	id,
-	onDelete,
 	onAdd,
+	onDelete,
+	onReplace,
 }: {
 	id: string
-	onDelete?: () => void
 	onAdd?: () => void
+	onDelete?: () => void
+	onReplace?: ({
+		attributeId,
+		traitId,
+	}: {
+		attributeId: string
+		traitId: string
+	}) => void
 }) {
 	const { address } = useAccount()
 	const { t } = useTranslation()
 	const { projectId } = useParams()
-	const { getFieldProps } = useFormikContext()
 
-	const [{ value: traits }, , { setValue }] = useField(
-		`projects.${projectId}.attributes.${id}.traits`,
+	const [traits, setTraits] = useField<Attribute['traits']>(
+		`attributes.${id}.traits`,
 	)
-	const [{ value: showInMetadata }, , { setValue: setShowInMetadata }] =
-		useField(`projects.${projectId}.attributes.${id}.showInMetadata`)
+	const [showInMetadata, setShowInMetadata] = useField(
+		`attributes.${id}.showInMetadata`,
+	)
+	const nameProps = useFieldProps<string>(`attributes.${id}.name`)
+	const aliasProps = useFieldProps<string>(`attributes.${id}.alias`)
 
 	return (
 		<Fragment>
@@ -252,17 +276,13 @@ function Attribute({
 						justifyContent: 'space-between',
 					}}
 				>
-					<input
-						style={{ fontSize: '1.5rem' }}
-						type="text"
-						{...getFieldProps(`projects.${projectId}.attributes.${id}.name`)}
-					/>
+					<input style={{ fontSize: '1.5rem' }} type="text" {...nameProps} />
 					<label htmlFor="">
-						<b>Alias</b>
+						<b>{t('alias')}</b>
 						<input
 							type="text"
 							style={{ width: '100%', display: 'block' }}
-							{...getFieldProps(`projects.${projectId}.attributes.${id}.alias`)}
+							{...aliasProps}
 						/>
 					</label>
 				</div>
@@ -312,10 +332,13 @@ function Attribute({
 						address={address!}
 						project={projectId!}
 						onDelete={() =>
-							setValue(
-								traits.filter((t: string) => t !== traitId),
-								true,
-							)
+							setTraits(traits.filter((t: string) => t !== traitId))
+						}
+						onReplace={(traitId) =>
+							onReplace?.({
+								traitId,
+								attributeId: id,
+							})
 						}
 						attributeId={id}
 						id={traitId}
@@ -329,16 +352,15 @@ function Attribute({
 
 function Attributes() {
 	const { t } = useTranslation()
-	const { projectId } = useParams()
-	const [isAddingAttribute, setIsAddingAttribute] = useState<boolean | string>(
-		false,
-	)
 
-	const { values, setValues } = useFormikContext<any>()
-	const [{ value: attributes }, , { setValue }] = useField(
-		`projects.${projectId}.attributes`,
-	)
-	const [{ value: traits }] = useField(`projects.${projectId}.traits`)
+	const [isAddingAttribute, setIsAddingAttribute] = useState<
+		boolean | { attributeId: string; traitId?: string }
+	>(false)
+
+	const [attributes, setAttributes] =
+		useField<Project['attributes']>('attributes')
+	const [traits, setTraits] = useField<Project['traits']>('traits')
+
 	const hasTraits = Object.keys(traits ?? {})?.length > 0
 
 	const memoAttributes = useMemo(
@@ -349,50 +371,52 @@ function Attributes() {
 	function handleUpload(assets: any) {
 		setIsAddingAttribute(false)
 
-		const attributeId =
-			typeof isAddingAttribute === 'string' ? isAddingAttribute : nanoid()
-		const existingAttribute =
-			values.projects[projectId!].attributes[attributeId]
+		const isReplace =
+			typeof isAddingAttribute === 'object' && isAddingAttribute?.traitId
 
-		const mappedAssets = assets.map((asset: any) => [
-			asset.id,
-			{
-				name: asset.name,
-				weight: '100%',
-				showInMetadata: true,
-				assetKey: asset.assetKey,
-			},
-		])
+		const attributeId =
+			typeof isAddingAttribute === 'object'
+				? isAddingAttribute.attributeId
+				: nanoid(MICRO_ID)
+		const existingAttribute = attributes[attributeId]
+
+		const mappedAssets = isReplace
+			? [
+					[
+						isAddingAttribute?.traitId!,
+						{
+							...traits[isAddingAttribute?.traitId!],
+							assetKey: assets[0].assetKey,
+						},
+					],
+			  ]
+			: assets.map((asset: any) => [
+					asset.id,
+					{
+						name: asset.name,
+						weight: '100%',
+						showInMetadata: true,
+						assetKey: asset.assetKey,
+					},
+			  ])
 
 		const traitsKeys = mappedAssets.map((a: any) => a[0])
 
-		setValues(
-			{
-				...values,
-				projects: {
-					...values.projects,
-					[projectId!]: {
-						...values.projects[projectId!],
-						traits: {
-							...values.projects[projectId!].traits,
-							...Object.fromEntries(mappedAssets),
-						},
-						attributes: {
-							...values.projects[projectId!].attributes,
-							[attributeId]: {
-								// eslint-disable-next-line no-magic-numbers
-								name: existingAttribute?.name ?? `New attribute ${nanoid(4)}`,
-								showInMetadata: existingAttribute?.showInMetadata ?? true,
-								blendType: existingAttribute?.blendType ?? BlendMode.normal,
-								weight: existingAttribute?.weight ?? '100%',
-								traits: [...(existingAttribute?.traits ?? []), ...traitsKeys],
-							},
-						},
-					},
-				},
+		setTraits((prev) => ({
+			...prev,
+			...Object.fromEntries(mappedAssets),
+		}))
+
+		setAttributes((prev) => ({
+			...prev,
+			[attributeId]: {
+				name: existingAttribute?.name ?? `New attribute ${nanoid(MICRO_ID)}`,
+				showInMetadata: existingAttribute?.showInMetadata ?? true,
+				blendMode: existingAttribute?.blendMode ?? BlendMode.normal,
+				weight: existingAttribute?.weight ?? '100%',
+				traits: [...(existingAttribute?.traits ?? []), ...traitsKeys],
 			},
-			true,
-		)
+		}))
 	}
 
 	if (!hasTraits) {
@@ -405,7 +429,7 @@ function Attributes() {
 				<UploadDialog
 					onClose={() => setIsAddingAttribute(false)}
 					onUpload={handleUpload}
-					isMultiple
+					isMultiple={!(isAddingAttribute as any).traitId}
 				/>
 			)}
 			<Flex
@@ -421,14 +445,16 @@ function Attributes() {
 			</Flex>
 			<Grid gap="var(--space--medium)">
 				{memoAttributes.map((key: string) => (
-					<Attribute
+					<AttributeItem
 						key={key}
 						id={key}
-						onAdd={() => setIsAddingAttribute(key)}
+						onAdd={() => setIsAddingAttribute({ attributeId: key })}
+						onReplace={({ attributeId, traitId }) =>
+							setIsAddingAttribute({ attributeId, traitId })
+						}
 						onDelete={() => {
 							// eslint-disable-next-line @typescript-eslint/no-unused-vars
-							const { [key]: _, ...rest } = attributes
-							setValue(rest, true)
+							setAttributes(({ [key]: _, ...rest }) => rest)
 						}}
 					/>
 				))}

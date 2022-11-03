@@ -1,5 +1,4 @@
 import { useRef, Fragment, useCallback, useEffect, useState } from 'react'
-import { useField } from 'formik'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import update from 'immutability-helper'
@@ -18,13 +17,16 @@ import Button, { Icon } from 'components/Button'
 import { Flex, Grid } from 'components/system'
 import { Switch, SwitchThumb } from 'components/Switch'
 
-import type {
-	Project,
-	Template,
-	// Trait, Attribute
-} from 'lib/types'
 import { getAssetUrl } from 'lib'
 import Slider from 'components/Slider'
+import {
+	useField,
+	useFieldProps,
+	useFieldValue,
+	useSetFieldValue,
+} from 'lib/recoil'
+import { Project, Template } from 'lib/types'
+import { MICRO_ID } from 'lib/constants'
 
 const Card = styled(Button)<{ $enabled: boolean; $isDragging: boolean }>`
 	cursor: ${({ $enabled }) => ($enabled ? 'move' : 'inherit')};
@@ -32,7 +34,7 @@ const Card = styled(Button)<{ $enabled: boolean; $isDragging: boolean }>`
 	display: flex;
 	position: relative;
 	background-color: var(--colors--background_alternate);
-	color: white;
+	color: var(--colors--text);
 	border-radius: var(--border_radius--small);
 	align-items: center;
 	padding: 0 var(--space--large);
@@ -43,13 +45,15 @@ const Card = styled(Button)<{ $enabled: boolean; $isDragging: boolean }>`
 const ImgContainer = styled.div`
 	height: 50px;
 	width: 50px;
+	flex-shrink: 0;
 	border-radius: 12px;
-	border: 1px solid rgba(255, 255, 255, 0.2);
+	border: 1px solid var(--colors--border);
 	overflow: hidden;
 `
 
 const TokenName = styled.p`
 	width: 100%;
+	font-weight: 700;
 `
 
 interface DragItem {
@@ -172,7 +176,11 @@ function AttributeItem({
 			>
 				<TokenName>{text}</TokenName>
 				<ImgContainer>
-					<img style={{ width: '100%', height: '100%' }} src={image} alt="" />
+					<img
+						style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+						src={image}
+						alt=""
+					/>
 				</ImgContainer>
 			</Flex>
 			<Switch
@@ -196,35 +204,40 @@ function TemplateItem({
 }) {
 	const { t } = useTranslation()
 
-	const [{ value: template }, , { setValue }] = useField<Template>(
-		`projects.${projectId}.templates.${id}`,
+	const traits = useFieldValue<Project['traits']>('traits')
+	const attributes = useFieldValue<Project['attributes']>('attributes')
+	const setTemplate = useSetFieldValue<Template>(`templates.${id}`)
+	const templateAttributes = useFieldValue<Template['attributes']>(
+		`templates.${id}.attributes`,
 	)
-	const [templateName] = useField(`projects.${projectId}.templates.${id}.name`)
-	const [{ value: traits }] = useField<Project['traits']>(
-		`projects.${projectId}.traits`,
+	const templateNameProps = useFieldProps<Template['name']>(
+		`templates.${id}.name`,
 	)
-	const [{ value: attributes }] = useField<Project['attributes']>(
-		`projects.${projectId}.attributes`,
+	const [weightValue, setWeight] = useField<Template['weight']>(
+		`templates.${id}.weight`,
 	)
-	const [{ value: weightValue }, , { setValue: setWeight }] = useField(
-		`projects.${projectId}.templates.${id}.weight`,
-	)
-	const weightValueInt = parseInt(weightValue?.replace('%', ''))
-	const [items, setItems] = useState<string[]>(template.attributes)
+
+	const weightValueInt = parseInt(weightValue?.replace('%', '') ?? '')
+
+	const [items, setItems] = useState<string[]>(templateAttributes)
+
 	const allItems = items.concat(
 		Object.keys(attributes ?? {})
 			.map((key) => key)
-			.filter((key) => !items.includes(key)),
+			.filter((key) => !items.includes?.(key)),
 	)
 
 	useEffect(() => {
-		const nextValue = { ...template, attributes: items }
+		setTemplate((existing) => {
+			const nextValue = { ...existing, attributes: items }
 
-		if (JSON.stringify(nextValue) === JSON.stringify(template)) return
+			if (JSON.stringify(nextValue) === JSON.stringify(existing)) {
+				return existing
+			}
 
-		setValue(nextValue, true)
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [items, template])
+			return nextValue
+		})
+	}, [items, setTemplate])
 
 	const moveItem = useCallback((dragIndex: number, hoverIndex: number) => {
 		setItems((prevItems: any) =>
@@ -258,7 +271,7 @@ function TemplateItem({
 	}, [])
 
 	const renderCard = useCallback(
-		(item: string, index: number) => {
+		(item: any, index: number) => {
 			const [traitId] = attributes[item]?.traits ?? []
 			const { assetKey } = traits[traitId] ?? {}
 			const enabled = items.some((key) => key === item)
@@ -288,18 +301,14 @@ function TemplateItem({
 			gap="var(--space--medium)"
 		>
 			<label htmlFor="">
-				<input style={{ fontSize: '1.5rem' }} {...templateName} />
+				<input style={{ fontSize: '1.5rem' }} {...templateNameProps} />
 			</label>
 			<Flex gap="var(--space--medium)">
-				{/* <label htmlFor="">
-					<b>{t('count')}</b>
-					<input style={{ fontSize: '1.5rem' }} {...templateCount} />
-				</label> */}
 				<div style={{ flex: 1 }}>
 					<label style={{ flex: 1 }} htmlFor="">
 						<b>{t('weight')}</b>
 						<Slider
-							onValueChange={([value]) => setWeight(`${value}%`, true)}
+							onValueChange={([value]) => setWeight(`${value}%`)}
 							value={[weightValueInt]}
 						/>
 					</label>
@@ -318,7 +327,7 @@ function TemplateItem({
 					number={0}
 					projectName=""
 					assets={items.map((attributeKey) => {
-						const [firstTraitId] = attributes[attributeKey]?.traits ?? []
+						const [firstTraitId] = attributes[attributeKey as any]?.traits ?? []
 						const { assetKey } = traits[firstTraitId] ?? {}
 						return assetKey
 					})}
@@ -335,20 +344,18 @@ function Templates() {
 	const { projectId } = useParams()
 	const { address } = useAccount()
 
-	const [{ value: templates }, , { setValue: setTemplates }] = useField(
-		`projects.${projectId}.templates`,
-	)
+	const [templates, setTemplates] = useField<Project['templates']>('templates')
 
 	function handleAddTemplate() {
-		setTemplates({
-			...templates,
-			[nanoid()]: {
+		setTemplates((prev) => ({
+			...prev,
+			[nanoid(MICRO_ID)]: {
 				name: '',
 				weight: '100%',
 				showInMetadata: true,
 				attributes: [],
 			},
-		})
+		}))
 	}
 
 	return (

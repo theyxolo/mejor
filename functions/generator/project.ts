@@ -15,7 +15,7 @@ const handler = async (event: APIGatewayProxyEvent): Promise<any> => {
 	if (!signature) {
 		return jsonResponse(
 			{ error: 'No signature provided' },
-			HttpStatus.badRequest
+			HttpStatus.badRequest,
 		)
 	}
 
@@ -41,8 +41,9 @@ const handler = async (event: APIGatewayProxyEvent): Promise<any> => {
 			new PutObjectCommand({
 				Bucket: ASSETS_BUCKET,
 				Key: key,
-				Body: config,
-			})
+				Body: JSON.stringify(JSON.parse(config), null, 2),
+				ACL: 'private',
+			}),
 		)
 
 		return jsonResponse(config, HttpStatus.ok)

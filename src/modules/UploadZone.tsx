@@ -2,12 +2,13 @@
 import { useState } from 'react'
 import { nanoid } from 'nanoid'
 import { useTranslation } from 'react-i18next'
+import { captureException } from '@sentry/react'
 import { Folder } from 'react-feather'
 import ky from 'ky'
 
 import Loading from 'modules/Loading'
 
-import { API_HOST } from 'lib/constants'
+import { API_HOST, MICRO_ID } from 'lib/constants'
 
 function getFilesFromWebkitDataTransferItems(dataTransferItems: any) {
 	function traverseFileTreePromise(item: any, path = '') {
@@ -84,7 +85,7 @@ function UploadZone({
 				const extension = file.name.split('.').pop()
 				const [name] = file.name.split('.').slice(0, -1)
 
-				const id = nanoid()
+				const id = nanoid(MICRO_ID)
 				const fileName = `${id}.${extension}`
 
 				return {
@@ -122,7 +123,8 @@ function UploadZone({
 			setIsLoading(false)
 
 			onUpload(mappedFiles)
-		} catch {
+		} catch (error) {
+			captureException(error)
 			window.alert(t('errors.assetUpload'))
 			setIsLoading(false)
 		}
@@ -181,7 +183,7 @@ function UploadZone({
 				{isDragging
 					? t('modules.upload.dropFiles')
 					: t(
-							files
+							isMultiple
 								? 'modules.upload.selectFiles'
 								: 'modules.upload.selectFile',
 					  )}

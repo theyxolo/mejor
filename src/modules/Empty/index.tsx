@@ -1,4 +1,8 @@
+import { useTranslation } from 'react-i18next'
+
 function Empty() {
+	const { t } = useTranslation()
+
 	return (
 		<div
 			style={{
@@ -13,8 +17,8 @@ function Empty() {
 				opacity: 0.5,
 			}}
 		>
-			<h3>Nothing here</h3>
-			<p>Go ahead and create a new resource</p>
+			<h3>{t('screens.empty.title')}</h3>
+			<p>{t('screents.empty.description')}</p>
 		</div>
 	)
 }

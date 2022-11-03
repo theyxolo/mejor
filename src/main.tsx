@@ -1,9 +1,11 @@
 import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit'
-import { StrictMode } from 'react'
+import { StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import { WagmiConfig } from 'wagmi'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
+import { ErrorBoundary } from '@sentry/react'
+import { RecoilRoot } from 'recoil'
 
 import { GlobalStyle } from 'GlobalStyled'
 
@@ -22,19 +24,25 @@ const root = createRoot(document.getElementById('root') as HTMLElement)
 root.render(
 	<StrictMode>
 		<GlobalStyle />
-		<QueryClientProvider client={queryClient}>
-			<WagmiConfig client={wagmiClient}>
-				<RainbowKitProvider
-					showRecentTransactions
-					theme={darkTheme()}
-					chains={chains}
-				>
-					<BrowserRouter>
-						<TopNav />
-						<App />
-					</BrowserRouter>
-				</RainbowKitProvider>
-			</WagmiConfig>
-		</QueryClientProvider>
+		<RecoilRoot>
+			<QueryClientProvider client={queryClient}>
+				<WagmiConfig client={wagmiClient}>
+					<RainbowKitProvider
+						showRecentTransactions
+						theme={darkTheme()}
+						chains={chains}
+					>
+						<ErrorBoundary fallback={<p>Fail</p>}>
+							<Suspense fallback={null}>
+								<BrowserRouter>
+									<TopNav />
+									<App />
+								</BrowserRouter>
+							</Suspense>
+						</ErrorBoundary>
+					</RainbowKitProvider>
+				</WagmiConfig>
+			</QueryClientProvider>
+		</RecoilRoot>
 	</StrictMode>,
 )

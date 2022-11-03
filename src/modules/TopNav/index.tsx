@@ -66,6 +66,7 @@ function TopNav() {
 								borderRadius: 10,
 								padding: '2px 8px',
 								fontSize: '0.8rem',
+								opacity: 1,
 								lineHeight: '12px',
 							}}
 						>
@@ -137,7 +138,6 @@ function TopNav() {
 						</AccessibleIcon.Root>
 					</span>
 				</NavLink>
-				{/* <Button>{t('donate')}</Button> */}
 				<ConnectButton chainStatus="none" showBalance={false} />
 			</Flex>
 		</Styled.Header>

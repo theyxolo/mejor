@@ -1,8 +1,10 @@
 {
+	"actual": "Actual",
 	"addAttribute": "Añadir atributo",
 	"address": "Dirección",
 	"addTraits": "Añadir traits",
 	"agree": "De acuerdo",
+	"alias": "Alias",
 	"arguments": "Argumentos",
 	"artwork": "Arte",
 	"attributes": "Atributos",
@@ -65,5 +67,6 @@
 	"token": "Token",
 	"traits": "Traits",
 	"uploadingFiles": "Cargando archivos",
-	"useInput": "Usar input"
+	"useInput": "Usar input",
+	"weight": "Peso"
 }

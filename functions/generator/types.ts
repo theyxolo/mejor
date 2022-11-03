@@ -1,4 +1,7 @@
-import { BlendMode } from 'lib/constants'
+export enum BlendMode {
+	normal = 'normal',
+	multiply = 'multiply',
+}
 
 export type Trait = {
 	name: string

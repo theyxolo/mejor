@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useSigner } from 'wagmi'
 import { useTranslation } from 'react-i18next'
-import { useField, useFormik } from 'formik'
-import { useParams } from 'react-router'
+import { useFormik } from 'formik'
 import * as ethers from 'ethers'
 
 import Button from 'components/Button'
@@ -12,15 +11,15 @@ import bytecode from 'lib/erc721x/bytecode.json'
 import TextInput from 'components/TextInput'
 import { Main } from 'GlobalStyled'
 import { Flex, Grid } from 'components/system'
+import { useFieldValue } from 'lib/recoil'
 
 function Deploy() {
 	const { t } = useTranslation()
 	const [factory, setFactory] = useState<ethers.ContractFactory | null>(null)
 
-	const { projectId } = useParams()
-	const [{ value: name }] = useField(`projects.${projectId}.name`)
-	const [{ value: maxSupply }] = useField(`projects.${projectId}.count`)
-	const [{ value: symbol }] = useField(`projects.${projectId}.symbol`)
+	const name = useFieldValue<string>('name')
+	const maxSupply = useFieldValue<string>('count')
+	const symbol = useFieldValue<string>('metadata.symbol')
 
 	const formik = useFormik({
 		initialValues: {

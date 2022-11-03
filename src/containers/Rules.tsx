@@ -1,6 +1,5 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { Fragment } from 'react'
-import { useField } from 'formik'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, MinusCircle, XCircle } from 'react-feather'
 import styled from 'styled-components/macro'
@@ -10,6 +9,7 @@ import { useAccount } from 'wagmi'
 import Button from 'components/Button'
 import { Flex, Grid } from 'components/system'
 import { Attribute, Project, Rule } from 'lib/types'
+import { useFieldValue, useField } from 'lib/recoil'
 import {
 	Select,
 	SelectContent,
@@ -23,6 +23,7 @@ import {
 	SelectViewport,
 } from 'components/Select'
 import { getAssetUrl } from 'lib'
+import Empty from 'modules/Empty'
 
 const TraitContent = styled.div`
 	display: flex;
@@ -46,27 +47,21 @@ function Rules() {
 	const { projectId } = useParams()
 	const { address } = useAccount()
 
-	const [{ value }, , { setValue }] = useField<Project['rules']>(
-		`projects.${projectId}.rules`,
-	)
-	const [{ value: traits }] = useField<Project['traits']>(
-		`projects.${projectId}.traits`,
-	)
-	const [{ value: attributes }] = useField<Attribute[]>(
-		`projects.${projectId}.attributes`,
-	)
+	const [rules, setRules] = useField<[string, Rule, string][]>('rules')
+	const traits = useFieldValue<Project['traits']>('traits')
+	const attributes = useFieldValue<Attribute[]>('attributes')
 
 	function handleAddRule() {
-		setValue([...value, [[], Rule.DoesNotMixWith, []]] as any)
+		setRules((prev) => [...prev, ['', Rule.DoesNotMixWith, '']])
 	}
 
 	function handleSelectChange(
-		changeValue: string,
+		changeValue: Rule,
 		index: number,
 		position: 'first' | 'rule' | 'last',
 	) {
-		setValue(
-			value.map((rule, i) => {
+		setRules((rules) =>
+			rules.map((rule, i) => {
 				if (i === index) {
 					if (position === 'first') {
 						return [changeValue, rule[1], rule[2]]
@@ -79,13 +74,12 @@ function Rules() {
 				}
 
 				return rule
-			}) as any,
-			true,
+			}),
 		)
 	}
 
 	function handleRemoveRule(index: number) {
-		setValue(value.filter((_, i) => i !== index) as any, true)
+		setRules((rules) => rules.filter((_, i) => i !== index) as any)
 	}
 
 	return (
@@ -95,137 +89,154 @@ function Rules() {
 				<Button onClick={handleAddRule}>{t('addRule')}</Button>
 			</Flex>
 
-			<Grid
-				marginTop="var(--space--large)"
-				gridTemplateColumns="1fr 1fr 1fr auto"
-				gap="var(--space--medium)"
-			>
-				{value.map((_, index) => (
-					<Fragment key={index}>
-						<Select
-							onValueChange={(value) =>
-								handleSelectChange(value, index, 'first')
-							}
-							value={value[index][0]}
-						>
-							<SelectTrigger aria-label="Food">
-								<SelectValue placeholder="Select a fruit…" />
-								<SelectIcon>
-									<ChevronDown />
-								</SelectIcon>
-							</SelectTrigger>
-							<SelectContent>
-								<SelectViewport>
-									{Object.entries(attributes).map(
-										([key, { name, traits: traitKeys }]) => (
-											<SelectGroup key={key}>
-												<SelectLabel>{name}</SelectLabel>
-												{traitKeys.map((traitKey) => (
-													<SelectItem key={traitKey} value={traitKey}>
-														<SelectItemText asChild>
-															<TraitContent>
-																{traits[traitKey]?.name ?? 'unknown'}
-																<TraitImage
-																	alt=""
-																	src={getAssetUrl(traits[traitKey].assetKey, {
-																		project: projectId!,
-																		address: address!,
-																	})}
-																/>
-															</TraitContent>
-														</SelectItemText>
-													</SelectItem>
-												))}
-											</SelectGroup>
-										),
-									)}
-								</SelectViewport>
-							</SelectContent>
-						</Select>
+			{rules.length > 0 ? (
+				<Grid
+					marginTop="var(--space--large)"
+					gridTemplateColumns="1fr 1fr 1fr auto"
+					gap="var(--space--medium)"
+				>
+					{rules.map((_, index) => (
+						<Fragment key={index}>
+							<Select
+								onValueChange={(rules: Rule) =>
+									handleSelectChange(rules, index, 'first')
+								}
+								value={rules[index][0]}
+							>
+								<SelectTrigger aria-label="Food">
+									<SelectValue placeholder="Select a fruit…" />
+									<SelectIcon>
+										<ChevronDown />
+									</SelectIcon>
+								</SelectTrigger>
+								<SelectContent>
+									<SelectViewport>
+										{Object.entries(attributes).map(
+											([key, { name, traits: traitKeys }]) => (
+												<SelectGroup key={key}>
+													<SelectLabel>{name}</SelectLabel>
+													{traitKeys.map((traitKey) => (
+														<SelectItem key={traitKey} value={traitKey}>
+															<SelectItemText asChild>
+																<TraitContent>
+																	{traits[traitKey]?.name ?? 'unknown'}
+																	<TraitImage
+																		alt=""
+																		src={getAssetUrl(
+																			traits[traitKey].assetKey,
+																			{
+																				project: projectId!,
+																				address: address!,
+																			},
+																		)}
+																	/>
+																</TraitContent>
+															</SelectItemText>
+														</SelectItem>
+													))}
+												</SelectGroup>
+											),
+										)}
+									</SelectViewport>
+								</SelectContent>
+							</Select>
 
-						<Select
-							onValueChange={(value) =>
-								handleSelectChange(value, index, 'rule')
-							}
-							value={value[index][1]}
-						>
-							<SelectTrigger aria-label="Food">
-								<SelectValue placeholder="Select a fruit…" />
-								<SelectIcon>
-									<ChevronDown />
-								</SelectIcon>
-							</SelectTrigger>
-							<SelectContent>
-								<SelectViewport>
-									{Object.entries(Rule).map(([key, value]) => (
-										<SelectItem key={key} value={value}>
-											<SelectItemText asChild>
-												<Flex gap="var(--space--small)" alignItems="center">
-													<XCircle
-														style={{
-															color:
-																value === Rule.OnlyMixesWith ? 'green' : 'red',
-														}}
-													/>
-													{t(`rules.${value}`)}
-												</Flex>
-											</SelectItemText>
-										</SelectItem>
-									))}
-								</SelectViewport>
-							</SelectContent>
-						</Select>
+							<Select
+								onValueChange={(rules: Rule) =>
+									handleSelectChange(rules, index, 'rule')
+								}
+								value={rules[index][1]}
+							>
+								<SelectTrigger aria-label="Food">
+									<SelectValue placeholder="Select a fruit…" />
+									<SelectIcon>
+										<ChevronDown />
+									</SelectIcon>
+								</SelectTrigger>
+								<SelectContent>
+									<SelectViewport>
+										{Object.entries(Rule).map(([key, rules]) => (
+											<SelectItem key={key} value={rules}>
+												<SelectItemText asChild>
+													<Flex gap="var(--space--small)" alignItems="center">
+														<XCircle
+															style={{
+																color:
+																	rules === Rule.OnlyMixesWith
+																		? 'green'
+																		: 'red',
+															}}
+														/>
+														{t(`rules.${rules}`)}
+													</Flex>
+												</SelectItemText>
+											</SelectItem>
+										))}
+									</SelectViewport>
+								</SelectContent>
+							</Select>
 
-						<Select
-							onValueChange={(value) =>
-								handleSelectChange(value, index, 'last')
-							}
-							value={value[index][2]}
-						>
-							<SelectTrigger aria-label="Food">
-								<SelectValue placeholder="Select a fruit…" />
-								<SelectIcon>
-									<ChevronDown />
-								</SelectIcon>
-							</SelectTrigger>
-							<SelectContent>
-								<SelectViewport>
-									{Object.entries(attributes).map(
-										([key, { name, traits: traitKeys }]) => (
-											<SelectGroup key={key}>
-												<SelectLabel>{name}</SelectLabel>
-												{traitKeys.map((traitKey) => (
-													<SelectItem key={traitKey} value={traitKey}>
-														<SelectItemText asChild>
-															<TraitContent>
-																{traits[traitKey]?.name ?? 'unknown'}
-																<TraitImage
-																	alt=""
-																	src={getAssetUrl(traits[traitKey].assetKey, {
-																		project: projectId!,
-																		address: address!,
-																	})}
-																/>
-															</TraitContent>
-														</SelectItemText>
-													</SelectItem>
-												))}
-											</SelectGroup>
-										),
-									)}
-								</SelectViewport>
-							</SelectContent>
-						</Select>
+							<Select
+								onValueChange={(rules: Rule) =>
+									handleSelectChange(rules, index, 'last')
+								}
+								value={rules[index][2]}
+							>
+								<SelectTrigger aria-label="Food">
+									<SelectValue placeholder="Select a fruit…" />
+									<SelectIcon>
+										<ChevronDown />
+									</SelectIcon>
+								</SelectTrigger>
+								<SelectContent>
+									<SelectViewport>
+										{Object.entries(attributes).map(
+											([key, { name, traits: traitKeys }]: any) => (
+												<SelectGroup key={key}>
+													<SelectLabel>{name}</SelectLabel>
+													{traitKeys.map((traitKey: any) => (
+														<SelectItem key={traitKey} value={traitKey}>
+															<SelectItemText asChild>
+																<TraitContent>
+																	<>
+																		{traits[traitKey]?.name ?? 'unknown'}
+																		<TraitImage
+																			alt=""
+																			src={getAssetUrl(
+																				traits[traitKey].assetKey,
+																				{
+																					project: projectId!,
+																					address: address!,
+																				},
+																			)}
+																		/>
+																	</>
+																</TraitContent>
+															</SelectItemText>
+														</SelectItem>
+													))}
+												</SelectGroup>
+											),
+										)}
+									</SelectViewport>
+								</SelectContent>
+							</Select>
 
-						<button
-							style={{ backgroundColor: 'transparent', color: 'white' }}
-							onClick={() => handleRemoveRule(index)}
-						>
-							<MinusCircle strokeWidth={3} />
-						</button>
-					</Fragment>
-				))}
-			</Grid>
+							<button
+								style={{
+									backgroundColor: 'transparent',
+									color: 'var(--colors--text)',
+								}}
+								onClick={() => handleRemoveRule(index)}
+							>
+								<MinusCircle strokeWidth={3} />
+							</button>
+						</Fragment>
+					))}
+				</Grid>
+			) : (
+				<Empty />
+			)}
 		</>
 	)
 }

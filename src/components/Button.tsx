@@ -11,10 +11,12 @@ import {
 
 const buttonStyle = css<{ $primary?: boolean }>`
 	text-decoration: none;
-	background-color: ${({ $primary }) => ($primary ? '#9d74eb' : '#fff')};
+	background-color: ${({ $primary }) =>
+		$primary ? 'var(--colors--tint)' : 'var(--colors--text)'};
 	padding: 5px 20px;
 	border: none;
-	color: ${({ $primary }) => ($primary ? '#fff' : '#000')};
+	color: ${({ $primary }) =>
+		$primary ? 'var(--colors--text)' : 'var(--colors--background)'};
 	box-shadow: ${({ $primary }) =>
 		$primary ? '0 0 9px rgb(157, 116, 235,0.75)' : ''};
 	border-radius: 20px;

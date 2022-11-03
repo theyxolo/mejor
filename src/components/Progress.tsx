@@ -5,7 +5,7 @@ const StyledProgress = styled(ProgressPrimitive.Root)`
 	position: relative;
 	overflow: hidden;
 	border-radius: 99999px;
-	background: black;
+	background: var(--colors--background);
 	width: 100%;
 	height: 25px;
 

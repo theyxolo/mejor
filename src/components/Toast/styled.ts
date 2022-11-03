@@ -46,7 +46,7 @@ export const Viewport = styled(ToastPrimitive.Viewport)`
 `
 
 export const Toast = styled(ToastPrimitive.Root)`
-	background-color: black;
+	background-color: var(--colors--background);
 	backdrop-filter: blur(10px);
 	border-radius: var(--border_radius--large);
 	padding: var(--space--large);
@@ -80,19 +80,19 @@ export const Title = styled(ToastPrimitive.Title)`
 	grid-area: title;
 	margin-bottom: var(--space--xxsmall);
 	font-weight: 500;
-	color: white;
+	color: var(--colors--text);
 	font-size: 0.9rem;
 `
 
 export const Description = styled(ToastPrimitive.Description)`
 	grid-area: description;
 	margin: 0;
-	color: white;
+	color: var(--colors--text);
 	font-size: 0.8rem;
 	line-height: 1.3;
 `
 
 export const Action = styled(ToastPrimitive.Action)`
 	font-size: 0.8rem;
-	color: white;
+	color: var(--colors--text);
 `

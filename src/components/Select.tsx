@@ -12,8 +12,8 @@ const StyledTrigger = styled(SelectPrimitive.SelectTrigger)`
 	min-height: 35px;
 	padding: 4px 16px;
 	gap: 5px;
-	background-color: black;
-	color: white;
+	background-color: var(--colors--background);
+	color: var(--colors--text);
 	border: 1px solid var(--colors--border);
 	font-weight: 800;
 
@@ -21,7 +21,7 @@ const StyledTrigger = styled(SelectPrimitive.SelectTrigger)`
 		background-color: mauve;
 	}
 	&:focus {
-		box-shadow: 0 0 0 2px white;
+		box-shadow: 0 0 0 2px var(--colors--text);
 	}
 	&[data-placeholder] {
 		color: violet;
@@ -29,12 +29,12 @@ const StyledTrigger = styled(SelectPrimitive.SelectTrigger)`
 `
 
 const StyledIcon = styled(SelectPrimitive.SelectIcon)`
-	color: white;
+	color: var(--colors--text);
 `
 
 const StyledContent = styled(SelectPrimitive.Content)`
 	overflow: hidden;
-	background-color: black;
+	background-color: var(--colors--background);
 	border-radius: var(--border_radius--small);
 	padding: 0;
 	border: 1px solid var(--colors--border);
@@ -56,7 +56,7 @@ const StyledItem = styled(SelectPrimitive.Item)`
 	all: unset;
 	font-size: 13px;
 	line-height: 1;
-	color: white;
+	color: var(--colors--text);
 	border-radius: 3px;
 	display: flex;
 	min-height: 35px;
@@ -74,7 +74,7 @@ const StyledItem = styled(SelectPrimitive.Item)`
 
 	&[data-highlighted] {
 		background-color: var(--colors--border);
-		color: white;
+		color: var(--colors--text);
 	}
 `
 

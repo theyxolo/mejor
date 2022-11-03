@@ -1,133 +1,70 @@
-import { Suspense, useCallback, useEffect, useState } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Formik } from 'formik'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount, useSignMessage } from 'wagmi'
-import debounce from 'lodash.debounce'
-import styled from 'styled-components/macro'
-import { AlertTriangle, CheckCircle } from 'react-feather'
-// eslint-disable-next-line import/no-unresolved
+import { useRecoilState } from 'recoil'
+import { CheckCircle } from 'react-feather'
 import '@rainbow-me/rainbowkit/styles.css'
-
-import Button, { Icon } from 'components/Button'
-import { Flex } from 'components/system'
-import { Main as StyledMain } from 'GlobalStyled'
 
 import Loading from 'modules/Loading'
 
-import type { UserConfig } from 'lib/types'
-import { useGetConfig, useUpdateConfig } from 'lib/api'
+import Button, { Icon } from 'components/Button'
+import { Main as StyledMain } from 'GlobalStyled'
+
 import { capture, identify } from 'lib/analytics'
-import { OutContext, type OutConfig } from 'lib/context/out'
-import { getOut } from 'lib/combinationsEngine'
+import { signedMessageAtom } from 'lib/recoil'
+// import { getOut } from 'lib/combinationsEngine'
 
 import Routes from './Routes'
 
-const initialValues = {
-	projects: [],
-}
+// const initialValues = {
+// 	projects: [],
+// }
 
-const DEBOUNCE_DELAY = 3000
+// const DEBOUNCE_DELAY = 3000
 
-const RegeneratedToast = styled(Flex)`
-	z-index: 100000;
-	position: fixed;
-	bottom: 0;
-	background-color: var(--colors--mandarina);
-	border-radius: 20px;
-	box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.75);
-	opacity: 1;
-	animation: slide 7s forwards;
+// const RegeneratedToast = styled(Flex)`
+// 	z-index: 100000;
+// 	position: fixed;
+// 	bottom: 0;
+// 	background-color: var(--colors--mandarina);
+// 	border-radius: 20px;
+// 	box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.75);
+// 	opacity: 1;
+// 	animation: slide 7s forwards;
 
-	@keyframes slide {
-		0% {
-			right: -500px;
-		}
-		10% {
-			right: 0;
-		}
-		90% {
-			right: 0;
-		}
-		100% {
-			right: -500px;
-		}
-	}
-`
+// 	@keyframes slide {
+// 		0% {
+// 			right: -500px;
+// 		}
+// 		10% {
+// 			right: 0;
+// 		}
+// 		90% {
+// 			right: 0;
+// 		}
+// 		100% {
+// 			right: -500px;
+// 		}
+// 	}
+// `
 
 function App() {
 	const { t } = useTranslation()
 	const { address } = useAccount()
 
-	const [signedMessage, setSignedMessage] = useState(
-		localStorage.getItem('@mejor/signedMessage'),
-	)
-	const [outState, setOut] = useState<{
-		out: OutConfig | null
-		regeneratedAt: Date | null
-	}>({ regeneratedAt: null, out: null })
-
-	const updateConfig = useUpdateConfig()
-	const { data: configData, isFetching } = useGetConfig(signedMessage, {
-		cacheTime: 0,
-		staleTime: 0,
-		refetchOnWindowFocus: false,
-		enabled: Boolean(signedMessage),
-		onSuccess(data) {
-			if (data?.out) {
-				setOut({ regeneratedAt: null, out: data.out })
-			}
-		},
-	})
-
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const { out, ...userConfig } = configData ?? {}
-
-	useEffect(() => {
-		if (address) identify(address)
-	}, [address])
+	const [signedMessage, setSignedMessage] = useRecoilState(signedMessageAtom)
 
 	const { signMessage } = useSignMessage({
 		onSuccess(data) {
-			capture('signed message')
-			localStorage.setItem('@mejor/signedMessage', data)
+			capture('signed-message')
 			setSignedMessage(data)
 		},
 	})
 
-	const regenerateOut = useCallback(
-		async (values: UserConfig, mutate = true) => {
-			const out = Object.fromEntries(
-				Object.entries(values.projects).map(([projectId, project]) => [
-					projectId,
-					getOut(project),
-				]),
-			)
-
-			setOut({ regeneratedAt: new Date(), out })
-
-			if (mutate) await updateConfig.mutateAsync({ ...configData, out } as any)
-
-			// TODO: update server config
-			return out
-		},
-		[configData, updateConfig],
-	)
-
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	const handleChange = useCallback(
-		debounce(async (newValues: UserConfig) => {
-			const out = await regenerateOut(newValues, false)
-			const newConfig = { ...newValues, out }
-
-			await updateConfig.mutateAsync(newConfig as any)
-		}, DEBOUNCE_DELAY),
-		[],
-	)
-
-	if (isFetching) {
-		return <Loading center />
-	}
+	useEffect(() => {
+		if (address) identify(address)
+	}, [address])
 
 	if (!address) {
 		return (
@@ -181,23 +118,9 @@ function App() {
 	}
 
 	return (
-		<>
-			<OutContext.Provider
-				value={{ out: outState.out, regenerate: regenerateOut }}
-			>
-				<Formik
-					initialValues={(userConfig as any) ?? initialValues}
-					onSubmit={handleChange}
-					validate={handleChange}
-					validateOnChange={false}
-					validateOnBlur
-				>
-					<Suspense fallback={<Loading center />}>
-						<Routes />
-					</Suspense>
-				</Formik>
-			</OutContext.Provider>
-			{outState.regeneratedAt && (
+		<Suspense fallback={<Loading />}>
+			<Routes />
+			{/* {outState.regeneratedAt && (
 				<RegeneratedToast
 					key={outState.regeneratedAt?.getTime()}
 					alignItems="center"
@@ -208,9 +131,52 @@ function App() {
 					<AlertTriangle />
 					<p style={{ fontWeight: '800' }}>{t('combinationsRegenerated')}</p>
 				</RegeneratedToast>
-			)}
-		</>
+			)} */}
+		</Suspense>
 	)
+
+	// const updateConfig = useUpdateConfig()
+	// const { data: configData, isFetching } = useGetConfig(signedMessage, {
+	// 	cacheTime: 0,
+	// 	staleTime: 0,
+	// 	refetchOnWindowFocus: false,
+	// 	enabled: Boolean(signedMessage),
+	// 	onSuccess(data) {
+	// 		if (data?.out) {
+	// 			// setOut({ regeneratedAt: null, out: data.out })
+	// 		}
+	// 	},
+	// })
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	// const { out, ...userConfig } = configData ?? {}
+
+	// const regenerateOut = useCallback(
+	// 	async (values: UserConfig, mutate = true) => {
+	// 		const out = Object.fromEntries(
+	// 			Object.entries(values.projects).map(([projectId, project]) => [
+	// 				projectId,
+	// 				getOut(project),
+	// 			]),
+	// 		)
+	// 		setOut({ regeneratedAt: new Date(), out })
+	// 		if (mutate) await updateConfig.mutateAsync({ ...configData, out } as any)
+	// 		// TODO: update server config
+	// 		return out
+	// 	},
+	// 	[configData, updateConfig],
+	// )
+
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	// const handleChange = useCallback(
+	// 	debounce(async (newValues: UserConfig) => {
+	// 		const out = await regenerateOut(newValues, false)
+	// 		const newConfig = { ...newValues, out }
+
+	// 		await updateConfig.mutateAsync(newConfig as any)
+	// 	}, DEBOUNCE_DELAY),
+	// 	[],
+	// )
 }
 
 export default App

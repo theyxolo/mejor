@@ -5,7 +5,7 @@ const StyledSwitch = styled(SwitchPrimitive.Root)<{ disabled?: boolean }>`
 	all: unset;
 	width: 42px;
 	height: 25px;
-	background-color: black;
+	background-color: var(--colors--background);
 	border-radius: 9999px;
 	position: relative;
 	cursor: default;

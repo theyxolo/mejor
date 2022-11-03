@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useField, useFormikContext } from 'formik'
 import { useTranslation } from 'react-i18next'
 import { MinusCircle, PlusCircle } from 'react-feather'
 import { useParams } from 'react-router'
@@ -13,8 +12,10 @@ import { Flex, Grid } from 'components/system'
 import Button, { Icon } from 'components/Button'
 import TextInput from 'components/TextInput'
 
-import { CustomToken, Project } from 'lib/types'
 import UploadDialog from 'modules/UploadDialog'
+import { useField, useFieldProps, useFieldValue } from 'lib/recoil'
+import { CustomToken, Project } from 'lib/types'
+import { MICRO_ID } from 'lib/constants'
 
 function CustomTokenItem({
 	projectId,
@@ -28,30 +29,24 @@ function CustomTokenItem({
 	onRemove: (key: string) => void
 }) {
 	const { t } = useTranslation()
-	const { getFieldProps } = useFormikContext()
 
-	const [{ value: traits }] = useField<Project['traits']>(
-		`projects.${projectId}.traits`,
+	const traits = useFieldValue<Project['traits']>('traits')
+	const [tokenTraits, setTokenTraits] = useField<CustomToken['traits']>(
+		`customTokens.${id}.traits`,
 	)
-	const [{ value: tokenTraits }, , { setValue: setTokenTraits }] = useField<
-		CustomToken['traits']
-	>(`projects.${projectId}.customTokens.${id}.traits`)
+	const nameFieldProps = useFieldProps<string>(`customTokens.${id}.name`)
 
 	return (
 		<Flex gap="var(--space--large)" flexDirection="column" key={id}>
 			<Flex style={{ flex: 1 }} gap="var(--space--medium)">
-				<TextInput
-					style={{ flex: 1 }}
-					label={t('name')}
-					{...getFieldProps(`projects.${projectId}.customTokens.${id}.name`)}
-				/>
+				<TextInput style={{ flex: 1 }} label={t('name')} {...nameFieldProps} />
 				<button onClick={() => onRemove(id)}>
 					<MinusCircle />
 				</button>
 			</Flex>
 			<Flex flexDirection="column" gap="var(--space--medium)">
 				<TokenPreview
-					assets={tokenTraits.map((key) => {
+					assets={tokenTraits.map((key: any) => {
 						const { assetKey } = traits[key] ?? {}
 						return assetKey
 					})}
@@ -106,11 +101,9 @@ function CustomTokens() {
 
 	const [isUploading, setIsUploading] = useState(false)
 
-	const [{ value: customTokens }, , { setValue: setCustomTokens }] =
-		useField<any>(`projects.${projectId}.customTokens`)
-	const [{ value: traits }, , { setValue: setTraits }] = useField<
-		CustomToken['traits']
-	>(`projects.${projectId}.traits`)
+	const [customTokens, setCustomTokens] =
+		useField<Project['customTokens']>('customTokens')
+	const [traits, setTraits] = useField<Project['traits']>('traits')
 
 	const customTokensArray = Object.entries(customTokens)
 
@@ -124,7 +117,7 @@ function CustomTokens() {
 		setCustomTokens(newCustomTokens)
 	}
 
-	async function handleUpload(
+	function handleUpload(
 		assets: {
 			name: string
 			id: string
@@ -135,7 +128,7 @@ function CustomTokens() {
 		if (!asset) return
 
 		// Create trait
-		await setTraits({
+		setTraits({
 			...traits,
 			[asset.id]: {
 				// eslint-disable-next-line no-magic-numbers
@@ -146,9 +139,9 @@ function CustomTokens() {
 			},
 		})
 
-		await setCustomTokens({
+		setCustomTokens({
 			...customTokens,
-			[nanoid()]: {
+			[nanoid(MICRO_ID)]: {
 				name: asset.name ?? 'New token',
 				assetKey: '',
 				traits: [asset.id],

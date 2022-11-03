@@ -10,6 +10,27 @@ import ky from 'ky'
 import type { UserConfig } from 'lib/types'
 import { API_HOST } from 'lib/constants'
 
+export function getUserConfig() {
+	return ky
+		.get(
+			`${API_HOST}/project?signature=${localStorage.getItem(
+				'@mejor/signedMessage',
+			)}`,
+		)
+		.json<UserConfig>()
+}
+
+export function setUserConfig(config: UserConfig) {
+	return ky
+		.post(
+			`${API_HOST}/project?signature=${localStorage.getItem(
+				'@mejor/signedMessage',
+			)}`,
+			{ json: config },
+		)
+		.json()
+}
+
 export function useGetConfig(
 	signature?: string | null,
 	options?: UseQueryOptions<any, Error, UserConfig, ['config', string]>,
@@ -26,9 +47,7 @@ export function useUpdateConfig() {
 	const queryClient = useQueryClient()
 
 	return useMutation({
-		mutationFn: (
-			config: UserConfig & { out: { [projectId: string]: string[][] } },
-		) =>
+		mutationFn: (config: UserConfig) =>
 			ky
 				.post(
 					`${API_HOST}/project?signature=${localStorage.getItem(

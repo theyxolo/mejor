@@ -44,7 +44,7 @@ export const Header = styled.div`
 			opacity: 0.8;
 
 			&:hover {
-				background-color: var(--color--overlay_alternate);
+				background-color: var(--colors--overlay_alternate);
 				opacity: 1;
 			}
 		}

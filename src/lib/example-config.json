@@ -51,8 +51,7 @@
 					"showInMetadata": false,
 					"attributes": ["ATTRIBUTE_ID"]
 				}
-			},
-			"out": [[]]
+			}
 		}
 	}
 }

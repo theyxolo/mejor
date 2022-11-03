@@ -3,9 +3,9 @@ import styled, { createGlobalStyle } from 'styled-components'
 export const GlobalStyle = createGlobalStyle`
 	:root {
 		--colors--background: #111;
-		--color--background_transparent: rgba(16, 16, 16, 0.9);
-		--color--overlay: rgba(0, 0, 0, 0.3);
-		--color--overlay_alternate: rgba(255, 255, 255, 0.1);
+		--colors--background_transparent: rgba(16, 16, 16, 0.9);
+		--colors--overlay: rgba(0, 0, 0, 0.3);
+		--colors--overlay_alternate: rgba(255, 255, 255, 0.1);
 		--colors--background_alternate: #222;
 		--colors--background_opposite: #fff;
 		--colors--border: #393939;
@@ -13,7 +13,22 @@ export const GlobalStyle = createGlobalStyle`
 		--colors--text: #fff;
 		--colors--text_opposite: #000;
 
-		--colors--pina: #e4c742;
+		/* Light mode */
+		@media (prefers-color-scheme: light) {
+			--colors--background: #fff;
+			--colors--background_transparent: rgba(255, 255, 255, 0.9);
+			--colors--overlay: rgba(255, 255, 255, 0.3);
+			--colors--overlay_alternate: rgba(0, 0, 0, 0.1);
+			--colors--background_alternate: #f2f2f2;
+			--colors--background_opposite: #111;
+			--colors--border: #e0e0e0;
+			--colors--border_alternate: #f2f2f2;
+			--colors--text: #000;
+			--colors--text_opposite: #fff;
+		}
+		
+
+		--colors--pina: #F3D034;
 		--colors--mandarina: #ef9637;
 		--colors--pitaya: #fa63b0;
 		--colors--lichi: #fca9d3;
@@ -21,6 +36,7 @@ export const GlobalStyle = createGlobalStyle`
 		--colors--chicle: #73ddfd;
 		--colors--uva: #be9af8;
 		--colors--verde: #c2eb42;
+		--colors--tint: #9d74eb;
 
 		--border_radius--small: 16px;
 		--border_radius--medium: 22px;
@@ -37,12 +53,12 @@ export const GlobalStyle = createGlobalStyle`
 
 		--image--transparent: linear-gradient(
 				45deg,
-				#222 25%,
+				var(--colors--background_alternate) 25%,
 				transparent 0,
 				transparent 75%,
-				#222 0
+				var(--colors--background_alternate) 0
 			),
-			linear-gradient(45deg, #222 25%, transparent 0, transparent 75%, #222 0);
+			linear-gradient(45deg, var(--colors--background_alternate) 25%, transparent 0, transparent 75%, var(--colors--background_alternate) 0);
 	}
 
 	* {
@@ -74,7 +90,8 @@ export const GlobalStyle = createGlobalStyle`
 	h3,
 	h4,
 	h5,
-	h6 {
+	h6,
+	button {
 		font-weight: 900;
 		font-family: SFRounded, ui-rounded, SF Pro Rounded, system-ui, Helvetica Neue,
 			Arial, Helvetica, sans-serif;

@@ -60,7 +60,7 @@ const TabItem = styled(Tabs.Trigger)`
 	position: relative;
 
 	span {
-		color: white;
+		color: var(--colors--text);
 		display: flex;
 		align-items: center;
 		gap: var(--space--medium);
@@ -69,7 +69,7 @@ const TabItem = styled(Tabs.Trigger)`
 		border-radius: var(--border_radius--small);
 
 		&:hover {
-			background: rgba(255, 255, 255, 0.1);
+			background: var(--colors--overlay_alternate);
 		}
 	}
 

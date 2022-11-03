@@ -4,7 +4,7 @@ import { Project, Rule, Template } from 'lib/types'
 function getWeightedRandom(items: any[], existingWeights?: number[]) {
 	const weights =
 		existingWeights ??
-		items.map((item) => Number(String(item.weight).replace('%', '')))
+		items.map((item) => Number(String(item.weight ?? '1').replace('%', '')))
 
 	let i
 	for (i = 0; i < weights.length; i++) {
@@ -31,17 +31,18 @@ export function shuffleArray(array: any[]) {
 	return array
 }
 
-export function getOut(config: Project) {
+export function getOut(config: Omit<Project, 'export'>) {
 	const { rules, templates, attributes, traits, count, customTokens } = config
-	const out: string[] = []
+
+	const combinations: string[] = []
 
 	// Push custom tokens first
 	Object.values(customTokens).forEach((customToken) => {
-		out.push(customToken.traits.join(','))
+		combinations.push(customToken.traits.join(','))
 	})
 
-	while (out.length < count) {
-		const template: Template = getWeightedRandom(Object.values(templates ?? {}))
+	while (combinations.length < count) {
+		const template: Template = getWeightedRandom(Object.values(templates))
 		const templateAttributes = template?.attributes.map(
 			(attributeId) => attributes[attributeId],
 		)
@@ -83,12 +84,12 @@ export function getOut(config: Project) {
 		})
 
 		// If there's not an existing one already, push to the output
-		if (!out.find((traitGroup) => traitGroup === currentComb)) {
-			out.push(currentComb)
+		if (!combinations.find((traitGroup) => traitGroup === currentComb)) {
+			combinations.push(currentComb)
 		}
 	}
 
-	const outAssetKeys = shuffleArray(out).map((o) =>
+	const outAssetKeys = shuffleArray(combinations).map((o) =>
 		o.split(',').map((traitId: string) => traits[traitId].assetKey),
 	)
 

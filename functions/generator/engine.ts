@@ -7,7 +7,6 @@ import PQueue from 'p-queue'
 import { Upload } from '@aws-sdk/lib-storage'
 import type { CarReader } from '@ipld/car/api'
 import Pusher from 'pusher'
-import { FormatEnum } from 'sharp'
 import type { CID } from 'nft.storage/dist/src/lib/interface'
 
 const pusher = new Pusher({
@@ -20,37 +19,7 @@ const pusher = new Pusher({
 
 import { getObject, getMaxCPUs, s3Client, ASSETS_BUCKET } from './utils'
 import './generateTokenAssets'
-
-type BlendMode = 'normal' | 'multiply'
-
-type Trait = {
-	name: string
-	weight: string
-	showInMetadata: boolean
-	assetKey: string
-}
-
-type Attribute = {
-	name: string
-	alias: string
-	weight: string
-	blendMode: BlendMode
-	showInMetadata: boolean
-	traits: string[]
-}
-
-type UserConfig = {
-	projects: {
-		[projectId: string]: {
-			name: string
-			traits: { [key: string]: Trait }
-			attributes: { [key: string]: Attribute }
-			metadata: { [key: string]: string }
-			artwork: { format: keyof FormatEnum; dimensions: number }
-		}
-	}
-	out: { [projectId: string]: string[][] }
-}
+import { UserConfig } from './types'
 
 const handler = async (
 	event: {
@@ -77,7 +46,7 @@ const handler = async (
 	const data = JSON.parse(stringData.toString()) as UserConfig
 
 	const project = data.projects[projectId]
-	const combinations = data.out[projectId]
+	const { combinations } = project.export
 
 	const projectConfig = project
 	const artworkFormat = project.artwork?.format ?? 'png'
@@ -186,6 +155,7 @@ const handler = async (
 				'{{number}}',
 				String(index + 1),
 			),
+			dna: combinations[index].map((trait) => trait.split('.')[0]).join(':'),
 			edition: index + 1,
 			compiler: 'Mejor by They Xolo',
 			image: imagesCID

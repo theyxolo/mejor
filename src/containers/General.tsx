@@ -1,14 +1,19 @@
-import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useFormikContext } from 'formik'
 
 import { Flex } from 'components/system'
+import { useFieldProps } from 'lib/recoil'
 
 function Token() {
-	const { projectId } = useParams()
 	const { t } = useTranslation()
 
-	const { getFieldProps } = useFormikContext()
+	const countProps = useFieldProps('count')
+	const nameProps = useFieldProps('name')
+	const symbolProps = useFieldProps('metadata.symbol')
+	const artworkDimensionsProps = useFieldProps('artwork.dimensions')
+	const artworkFormatProps = useFieldProps('artwork.format')
+	const externalUrlProps = useFieldProps('metadata.externalUrl')
+	const descriptionProps = useFieldProps('metadata.description')
+	const metadataNameProps = useFieldProps('metadata.name')
 
 	return (
 		<>
@@ -22,7 +27,7 @@ function Token() {
 					<input
 						type="number"
 						placeholder={t('placeholders.collectionCount')}
-						{...getFieldProps(`projects.${projectId}.count`)}
+						{...countProps}
 					/>
 				</label>
 				<label htmlFor="">
@@ -30,7 +35,7 @@ function Token() {
 					<input
 						type="name"
 						placeholder={t('placeholders.collectionName')}
-						{...getFieldProps(`projects.${projectId}.name`)}
+						{...nameProps}
 					/>
 				</label>
 				<label htmlFor="">
@@ -38,7 +43,7 @@ function Token() {
 					<input
 						type="text"
 						placeholder={t('placeholders.collectionSymbol')}
-						{...getFieldProps(`projects.${projectId}.symbol`)}
+						{...symbolProps}
 					/>
 				</label>
 			</Flex>
@@ -49,14 +54,11 @@ function Token() {
 			<Flex gap="var(--space--medium)" flexDirection="column" maxWidth="600px">
 				<label htmlFor="">
 					<b>{t('dimensions')}</b>
-					<input
-						type="number"
-						{...getFieldProps(`projects.${projectId}.artwork.dimensions`)}
-					/>
+					<input type="number" {...artworkDimensionsProps} />
 				</label>
 				<label htmlFor="">
 					<b>{t('format')}</b>
-					<select {...getFieldProps(`projects.${projectId}.artwork.format`)}>
+					<select {...artworkFormatProps}>
 						<option value="">{t('useInput')}</option>
 						<option value="png">PNG</option>
 						<option value="jpeg">JPEG</option>
@@ -72,23 +74,15 @@ function Token() {
 			<Flex gap="var(--space--medium)" flexDirection="column" maxWidth="600px">
 				<label htmlFor="">
 					<b>{t('externalUrl')}</b>
-					<input
-						type="text"
-						{...getFieldProps(`projects.${projectId}.metadata.externalUrl`)}
-					/>
+					<input type="text" {...externalUrlProps} />
 				</label>
 				<label htmlFor="">
 					<b>{t('description')}</b>
-					<textarea
-						{...getFieldProps(`projects.${projectId}.metadata.description`)}
-					/>
+					<textarea {...descriptionProps} />
 				</label>
 				<label htmlFor="">
 					<b>{t('name')}</b>
-					<input
-						type="text"
-						{...getFieldProps(`projects.${projectId}.metadata.name`)}
-					/>
+					<input type="text" {...metadataNameProps} />
 				</label>
 			</Flex>
 		</>

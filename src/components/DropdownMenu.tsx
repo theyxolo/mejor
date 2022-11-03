@@ -23,7 +23,7 @@ const slideLeftAndFade = keyframes`
 
 const contentStyles = css`
 	min-width: 220px;
-	background-color: white;
+	background-color: var(--colors--text);
 	border-radius: 6px;
 	padding: 5px;
 	box-shadow: 0px 10px 38px -10px rgba(22, 23, 24, 0.35),
@@ -55,7 +55,7 @@ const StyledContent = styled(DropdownMenuPrimitive.Content)`
 `
 
 const StyledArrow = styled(DropdownMenuPrimitive.Arrow)`
-	fill: white;
+	fill: var(--colors--text);
 `
 
 function Content({ children, ...props }: any) {
@@ -85,7 +85,7 @@ const itemStyles = css`
 	all: unset;
 	font-size: 1rem;
 	line-height: 1;
-	color: black;
+	color: var(--colors--background);
 	font-weight: 700;
 	border-radius: 3px;
 	display: flex;
@@ -102,8 +102,8 @@ const itemStyles = css`
 	}
 
 	&[data-highlighted] {
-		background-color: black;
-		color: white;
+		background-color: var(--colors--background);
+		color: var(--colors--text);
 	}
 
 	> svg {
@@ -126,8 +126,8 @@ const StyledRadioItem = styled(DropdownMenuPrimitive.RadioItem)`
 `
 const StyledSubTrigger = styled(DropdownMenuPrimitive.SubTrigger)`
 	&[data-state='open'] {
-		background-color: black;
-		color: white;
+		background-color: var(--colors--background);
+		color: var(--colors--text);
 	}
 
 	${itemStyles};
@@ -137,7 +137,7 @@ const StyledLabel = styled(DropdownMenuPrimitive.Label)`
 	padding-left: 25px;
 	font-size: 1rem;
 	line-height: 25px;
-	color: black;
+	color: var(--colors--background);
 `
 
 const StyledSeparator = styled(DropdownMenuPrimitive.Separator)`
@@ -157,10 +157,10 @@ const StyledItemIndicator = styled(DropdownMenuPrimitive.ItemIndicator)`
 
 export const RightSlot = styled.div`
 	margin-left: auto;
-	color: white;
+	color: var(--colors--background);
 
 	[data-highlighted] > & {
-		color: white;
+		color: var(--colors--text);
 	}
 
 	[data-disabled] & {

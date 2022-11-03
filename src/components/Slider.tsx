@@ -22,7 +22,7 @@ const StyledSlider = styled(SliderPrimitive.Root)`
 
 const StyledRange = styled(SliderPrimitive.Range)`
 	position: absolute;
-	background-color: #9d74eb;
+	background-color: var(--colors--tint);
 	border-radius: 9999px;
 	height: 100%;
 `
@@ -32,15 +32,15 @@ const StyledThumb = styled(SliderPrimitive.Thumb)`
 	display: block;
 	width: 20px;
 	height: 20px;
-	background-color: white;
-	box-shadow: 0 2px 10px #9d74eb;
+	background-color: var(--colors--background);
+	box-shadow: 0 0 0 2px var(--colors--tint);
 	border-radius: 10px;
 
 	&:hover {
-		background-color: #fff;
+		background-color: var(--colors--text);
 	}
 	&:focus {
-		box-shadow: 0 0 0 3px #9d74eb;
+		box-shadow: 0 0 0 3px var(--colors--tint);
 	}
 `
 
