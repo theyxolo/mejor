@@ -1,7 +1,7 @@
 {
-	"name": "nft-generator",
-	"description": "This template demonstrates how to make a simple HTTP API with Node.js and Typescript running on AWS Lambda and API Gateway using the Serverless Framework v3",
-	"version": "1.0.0",
+	"name": "mejor",
+	"description": "Mejor nft engine by They Xolo",
+	"version": "0.1.0",
 	"engines": {
 		"pnpm": "0.0.0"
 	},
