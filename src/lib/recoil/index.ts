@@ -29,7 +29,10 @@ const localStorageEffect: (key: string) => AtomEffect<string | null> =
 		onSet((newValue, _, isReset) =>
 			isReset
 				? localStorage.removeItem(key)
-				: localStorage.setItem(key, JSON.stringify(newValue)),
+				: localStorage.setItem(
+						key,
+						typeof newValue !== 'string' ? JSON.stringify(newValue) : newValue,
+				  ),
 		)
 	}
 
