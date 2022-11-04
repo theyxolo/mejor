@@ -87,7 +87,7 @@ export const projectSelector = selectorFamily<
 	key: 'current-project',
 	get:
 		(id) =>
-		({ get }) => {
+		({ get }): any => {
 			const config = get(configAtom)
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { export: _, ...project } = config?.projects?.[id] ?? {}
@@ -95,13 +95,16 @@ export const projectSelector = selectorFamily<
 		},
 })
 
-export const projectGeneratedSelector = selectorFamily<ProjectExport, string>({
+export const projectGeneratedSelector = selectorFamily<
+	ProjectExport | undefined,
+	string
+>({
 	key: 'current-project-export',
 	get:
 		(id: string) =>
 		({ get }) => {
 			const config = get(configAtom)
-			return config.projects?.[id]?.export
+			return config?.projects?.[id]?.export
 		},
 })
 
