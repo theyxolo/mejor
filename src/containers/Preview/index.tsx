@@ -123,7 +123,7 @@ function AttributesFilter({
 											(trait) =>
 												[
 													trait,
-													JSON.stringify(combinations).match(
+													JSON.stringify(combinations)?.match(
 														new RegExp(trait, 'g'),
 													)?.length ?? 0,
 												] as const,
