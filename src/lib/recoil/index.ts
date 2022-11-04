@@ -163,7 +163,7 @@ export function useSetFieldValue<T>(
 		(value: T | ((prev: T) => T)) => {
 			return setConfig((config: any) =>
 				setIn(
-					config,
+					config ?? {},
 					path,
 					value instanceof Function ? value(lodashGet(config, path)) : value,
 				),
@@ -191,7 +191,7 @@ export function useSetFieldsValue() {
 	return useCallback(
 		(path: NestedPaths<Project>, value: any) => {
 			setConfig((config: any) =>
-				setIn(config, `projects.${projectId}.${path!}`, value),
+				setIn(config ?? {}, `projects.${projectId}.${path!}`, value),
 			)
 		},
 		[setConfig, projectId],
