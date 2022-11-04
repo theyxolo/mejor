@@ -8,7 +8,7 @@ import ky from 'ky'
 
 import Loading from 'modules/Loading'
 
-import { API_HOST, MICRO_ID } from 'lib/constants'
+import { API_HOST, MICRO_ID, SIGNED_MESSAGE_KEY } from 'lib/constants'
 
 function getFilesFromWebkitDataTransferItems(dataTransferItems: any) {
 	function traverseFileTreePromise(item: any, path = '') {
@@ -104,7 +104,7 @@ function UploadZone({
 				json: {
 					paths: mappedFiles.map(({ fileName }) => fileName),
 					project: projectId,
-					signedMessage: localStorage.getItem('@mejor/signedMessage'),
+					signedMessage: localStorage.getItem(SIGNED_MESSAGE_KEY),
 				},
 			})
 			.json()) as { presignedUrl: string }[]

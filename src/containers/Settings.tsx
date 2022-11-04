@@ -5,11 +5,12 @@ import { ExternalLink, GitHub } from 'react-feather'
 import { Main } from 'GlobalStyled'
 import Button, { Icon } from 'components/Button'
 import { Flex } from 'components/system'
+import { NFT_STORAGE_KEY } from 'lib/constants'
 
 function Settings() {
 	const { t } = useTranslation()
 	const [nftStorageKey, setNftStorageKey] = useState(
-		localStorage.getItem('@mejor/nftStorageKey') ?? '',
+		localStorage.getItem(NFT_STORAGE_KEY) ?? '',
 	)
 
 	function handleLanguageChange({ target: { value } }: any) {
@@ -37,7 +38,7 @@ function Settings() {
 						value={nftStorageKey}
 						placeholder="nft.storage"
 						onBlur={(event) =>
-							localStorage.setItem('@mejor/nftStorageKey', event.target.value)
+							localStorage.setItem(NFT_STORAGE_KEY, event.target.value)
 						}
 						onChange={(event) => setNftStorageKey(event.target.value)}
 					/>

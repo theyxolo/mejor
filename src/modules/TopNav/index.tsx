@@ -24,6 +24,7 @@ import {
 } from 'components/Select'
 
 import { useGetConfig } from 'lib/api'
+import { SIGNED_MESSAGE_KEY } from 'lib/constants'
 
 import * as Styled from './styled'
 
@@ -36,9 +37,9 @@ function TopNav() {
 	// eslint-disable-next-line no-magic-numbers
 	const isProjectId = projectId.length === 21
 
-	const { data } = useGetConfig(localStorage.getItem('@mejor/signedMessage'), {
+	const { data } = useGetConfig(localStorage.getItem(SIGNED_MESSAGE_KEY), {
 		networkMode: 'offlineFirst',
-		enabled: Boolean(localStorage.getItem('@mejor/signedMessage')),
+		enabled: Boolean(localStorage.getItem(SIGNED_MESSAGE_KEY)),
 		refetchOnWindowFocus: false,
 	})
 

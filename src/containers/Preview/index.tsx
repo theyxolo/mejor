@@ -24,6 +24,7 @@ import Button, { Icon } from 'components/Button'
 import { Flex } from 'components/system'
 
 import { useFieldValue, useRegenerate } from 'lib/recoil'
+import { NFT_STORAGE_KEY } from 'lib/constants'
 import { Project } from 'lib/types'
 
 import { Main } from 'GlobalStyled'
@@ -303,7 +304,7 @@ function Preview() {
 										label: t('exportAndUploadToIPFS'),
 										onClick: () => handleExport('ipfs'),
 										icon: <UploadCloud size={14} strokeWidth={2.5} />,
-										disabled: !localStorage.getItem('@mejor/nftStorageKey'),
+										disabled: !localStorage.getItem(NFT_STORAGE_KEY),
 									},
 								]}
 								primary

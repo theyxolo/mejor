@@ -13,7 +13,12 @@ import Spinner from 'components/Spinner'
 import { Flex } from 'components/system'
 
 import { capture } from 'lib/analytics'
-import { API_HOST, ASSETS_BUCKET } from 'lib/constants'
+import {
+	API_HOST,
+	ASSETS_BUCKET,
+	NFT_STORAGE_KEY,
+	SIGNED_MESSAGE_KEY,
+} from 'lib/constants'
 
 const pusher = new Pusher(import.meta.env.VITE_PUSHER_KEY, {
 	cluster: 'us2',
@@ -56,10 +61,10 @@ function ExportDialog({
 				.put(`${API_HOST}/generate`, {
 					json: {
 						project,
-						signedMessage: localStorage.getItem('@mejor/signedMessage'),
+						signedMessage: localStorage.getItem(SIGNED_MESSAGE_KEY),
 						nftStorageToken:
 							uploadTo === 'ipfs'
-								? localStorage.getItem('@mejor/nftStorageKey')
+								? localStorage.getItem(NFT_STORAGE_KEY)
 								: undefined,
 						hash: exportKey,
 					},

@@ -16,6 +16,7 @@ import { Project, ProjectExport, UserConfig } from 'lib/types'
 import { NestedPaths, TypeFromPath } from '.d'
 import { getUserConfig, setUserConfig } from 'lib/api'
 import { getOut } from 'lib/combinationsEngine'
+import { SIGNED_MESSAGE_KEY } from 'lib/constants'
 
 const localStorageEffect: (key: string) => AtomEffect<string | null> =
 	(key) =>
@@ -63,7 +64,7 @@ export const ConfigLoadable = RecoilLoadable.of(getUserConfig())
 export const signedMessageAtom = atom<string | null>({
 	key: 'signed-message',
 	default: null,
-	effects: [localStorageEffect('@mejor/signed-message')],
+	effects: [localStorageEffect(SIGNED_MESSAGE_KEY)],
 })
 
 export const configAtom = atom<UserConfig | null>({

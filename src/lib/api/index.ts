@@ -8,13 +8,13 @@ import {
 import ky from 'ky'
 
 import type { UserConfig } from 'lib/types'
-import { API_HOST } from 'lib/constants'
+import { API_HOST, SIGNED_MESSAGE_KEY } from 'lib/constants'
 
 export function getUserConfig() {
 	return ky
 		.get(
 			`${API_HOST}/project?signature=${localStorage.getItem(
-				'@mejor/signedMessage',
+				SIGNED_MESSAGE_KEY,
 			)}`,
 		)
 		.json<UserConfig>()
@@ -24,7 +24,7 @@ export function setUserConfig(config: UserConfig) {
 	return ky
 		.post(
 			`${API_HOST}/project?signature=${localStorage.getItem(
-				'@mejor/signedMessage',
+				SIGNED_MESSAGE_KEY,
 			)}`,
 			{ json: config },
 		)
@@ -51,14 +51,14 @@ export function useUpdateConfig() {
 			ky
 				.post(
 					`${API_HOST}/project?signature=${localStorage.getItem(
-						'@mejor/signedMessage',
+						SIGNED_MESSAGE_KEY,
 					)}`,
 					{ json: config },
 				)
 				.json(),
 		onSuccess(data) {
 			queryClient.setQueryData(
-				['config', localStorage.getItem('@mejor/signedMessage')],
+				['config', localStorage.getItem(SIGNED_MESSAGE_KEY)],
 				JSON.parse(data as any),
 			)
 		},
