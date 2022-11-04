@@ -11,13 +11,21 @@ import type { UserConfig } from 'lib/types'
 import { API_HOST, SIGNED_MESSAGE_KEY } from 'lib/constants'
 
 export function getUserConfig() {
-	return ky
-		.get(
-			`${API_HOST}/project?signature=${localStorage.getItem(
-				SIGNED_MESSAGE_KEY,
-			)}`,
-		)
-		.json<UserConfig>()
+	const signature = localStorage.getItem(SIGNED_MESSAGE_KEY)
+
+	if (!signature) {
+		return {} as any
+	}
+
+	try {
+		const result = ky
+			.get(`${API_HOST}/project?signature=${signature}`)
+			.json<UserConfig>()
+
+		return result
+	} catch {
+		return {} as any
+	}
 }
 
 export function setUserConfig(config: UserConfig) {

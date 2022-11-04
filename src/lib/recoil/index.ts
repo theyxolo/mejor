@@ -90,7 +90,7 @@ export const projectSelector = selectorFamily<
 		({ get }) => {
 			const config = get(configAtom)
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const { export: _, ...project } = config!.projects[id] ?? {}
+			const { export: _, ...project } = config?.projects?.[id] ?? {}
 			return project
 		},
 })
@@ -101,7 +101,7 @@ export const projectGeneratedSelector = selectorFamily<ProjectExport, string>({
 		(id: string) =>
 		({ get }) => {
 			const config = get(configAtom)
-			return config!.projects[id].export
+			return config.projects?.[id]?.export
 		},
 })
 
