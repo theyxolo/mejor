@@ -37,7 +37,7 @@ export default defineConfig({
 	},
 	build: {
 		manifest: true,
-		sourcemap: false,
+		sourcemap: true,
 		rollupOptions: {
 			plugins: [rollupNodePolyFill({ exclude: ['fs'] })],
 		},
