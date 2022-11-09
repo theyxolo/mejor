@@ -95,5 +95,7 @@
   "uploadingFiles": "Uploading files",
   "useInput": "Use input",
   "screens.empty.title": "Nothing here yet",
-  "screents.empty.description": "Add some resource so it doesn't look sad."
+  "screents.empty.description": "Add some resource so it doesn't look sad.",
+  "screens.projects.title": "Projects",
+  "weight": "Weight"
 }

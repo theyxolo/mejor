@@ -2,9 +2,8 @@
 import { Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, MinusCircle, XCircle } from 'react-feather'
-import styled from 'styled-components/macro'
-import { useParams } from 'react-router'
-import { useAccount } from 'wagmi'
+// import { useParams } from 'react-router'
+// import { useAccount } from 'wagmi'
 
 import Button from 'components/Button'
 import { Flex, Grid } from 'components/system'
@@ -22,30 +21,15 @@ import {
 	SelectValue,
 	SelectViewport,
 } from 'components/Select'
-import { getAssetUrl } from 'lib'
+// import { getAssetUrl } from 'lib'
 import Empty from 'modules/Empty'
 
-const TraitContent = styled.div`
-	display: flex;
-	width: 100%;
-	font-size: 1rem;
-	flex-direction: row;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8;
-`
-
-const TraitImage = styled.img`
-	width: 35px;
-	height: 35px;
-	border-radius: 8px;
-	border: 1px solid #333;
-`
+import * as Styled from './styled'
 
 function Rules() {
 	const { t } = useTranslation()
-	const { projectId } = useParams()
-	const { address } = useAccount()
+	// const { projectId } = useParams()
+	// const { address } = useAccount()
 
 	const [rules, setRules] = useField<[string, Rule, string][]>('rules')
 	const traits = useFieldValue<Project['traits']>('traits')
@@ -95,16 +79,16 @@ function Rules() {
 					gridTemplateColumns="1fr 1fr 1fr auto"
 					gap="var(--space--medium)"
 				>
-					{rules.map((_, index) => (
+					{rules.map((rule, index) => (
 						<Fragment key={index}>
 							<Select
 								onValueChange={(rules: Rule) =>
 									handleSelectChange(rules, index, 'first')
 								}
-								value={rules[index][0]}
+								value={rule[0]}
 							>
-								<SelectTrigger aria-label="Food">
-									<SelectValue placeholder="Select a fruit…" />
+								<SelectTrigger aria-label="Attribute">
+									<SelectValue placeholder="Select a trait..." />
 									<SelectIcon>
 										<ChevronDown />
 									</SelectIcon>
@@ -118,9 +102,8 @@ function Rules() {
 													{traitKeys.map((traitKey) => (
 														<SelectItem key={traitKey} value={traitKey}>
 															<SelectItemText asChild>
-																<TraitContent>
-																	{traits[traitKey]?.name ?? 'unknown'}
-																	<TraitImage
+																<Styled.TraitContent>
+																	{/* <Styled.TraitImage
 																		alt=""
 																		src={getAssetUrl(
 																			traits[traitKey].assetKey,
@@ -129,8 +112,11 @@ function Rules() {
 																				address: address!,
 																			},
 																		)}
-																	/>
-																</TraitContent>
+																	/> */}
+																	{traits[traitKey]?.name
+																		? `${traits[traitKey]?.name} (${name})`
+																		: 'unknown'}
+																</Styled.TraitContent>
 															</SelectItemText>
 														</SelectItem>
 													))}
@@ -145,7 +131,7 @@ function Rules() {
 								onValueChange={(rules: Rule) =>
 									handleSelectChange(rules, index, 'rule')
 								}
-								value={rules[index][1]}
+								value={rule[1]}
 							>
 								<SelectTrigger aria-label="Food">
 									<SelectValue placeholder="Select a fruit…" />
@@ -180,7 +166,7 @@ function Rules() {
 								onValueChange={(rules: Rule) =>
 									handleSelectChange(rules, index, 'last')
 								}
-								value={rules[index][2]}
+								value={rule[2]}
 							>
 								<SelectTrigger aria-label="Food">
 									<SelectValue placeholder="Select a fruit…" />
@@ -197,21 +183,21 @@ function Rules() {
 													{traitKeys.map((traitKey: any) => (
 														<SelectItem key={traitKey} value={traitKey}>
 															<SelectItemText asChild>
-																<TraitContent>
-																	<>
-																		{traits[traitKey]?.name ?? 'unknown'}
-																		<TraitImage
-																			alt=""
-																			src={getAssetUrl(
-																				traits[traitKey].assetKey,
-																				{
-																					project: projectId!,
-																					address: address!,
-																				},
-																			)}
-																		/>
-																	</>
-																</TraitContent>
+																<Styled.TraitContent>
+																	{/* <Styled.TraitImage
+																		alt=""
+																		src={getAssetUrl(
+																			traits[traitKey].assetKey,
+																			{
+																				project: projectId!,
+																				address: address!,
+																			},
+																		)}
+																	/> */}
+																	{traits[traitKey]?.name
+																		? `${traits[traitKey]?.name} (${name})`
+																		: 'unknown'}
+																</Styled.TraitContent>
 															</SelectItemText>
 														</SelectItem>
 													))}

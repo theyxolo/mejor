@@ -153,13 +153,13 @@ function CustomTokens() {
 
 	return (
 		<>
-			{isUploading && (
+			{isUploading ? (
 				<UploadDialog
 					isMultiple={false}
 					onClose={() => setIsUploading(false)}
 					onUpload={handleUpload}
 				/>
-			)}
+			) : null}
 
 			<Flex justifyContent="space-between" alignItems="center">
 				<h2>{t('customTokens')}</h2>

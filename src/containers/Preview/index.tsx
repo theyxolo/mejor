@@ -100,13 +100,20 @@ function AttributesFilter({
 										fontWeight: '900',
 										padding: '5px 10px',
 										fontSize: '1rem',
+										color: 'var(--colors--text)',
 									}}
 									alignItems="center"
 									justifyContent="space-between"
 								>
 									{/* eslint-disable-next-line no-magic-numbers */}
 									<p style={{ opacity: value.showInMetadata ? 1 : 0.7 }}>
-										{value.name}
+										{value.alias ? value.alias : value.name}
+										{value.alias ? (
+											<span style={{ fontSize: '0.7rem', opacity: 0.5 }}>
+												{' '}
+												{value.name}
+											</span>
+										) : null}
 										{!value.showInMetadata && <HiddenInMetadataIcon />}
 									</p>
 									<ChevronDown />
@@ -170,7 +177,22 @@ function AttributesFilter({
 															)}
 														</p>
 													</Flex>
-													<p style={{ opacity: 0.7 }}>{count}</p>
+													<Flex
+														as="p"
+														style={{ opacity: 0.7 }}
+														flexDirection="column"
+														alignItems="flex-end"
+													>
+														{count}
+														<span style={{ fontSize: '0.7rem', opacity: 0.6 }}>
+															{Math.round(
+																// eslint-disable-next-line no-magic-numbers
+																(count / combinations.length) * 1000,
+																// eslint-disable-next-line no-magic-numbers
+															) / 10}
+															%
+														</span>
+													</Flex>
 												</Flex>
 											</li>
 										))}
@@ -244,7 +266,7 @@ function Preview() {
 
 	return (
 		<>
-			{isExporting && (
+			{Boolean(isExporting) && (
 				<ExportDialog
 					exportKey={exportKey}
 					project={projectId!}
@@ -296,7 +318,7 @@ function Preview() {
 								style={{ marginLeft: 4 }}
 							/>
 						</Button>
-						{combinations && (
+						{combinations ? (
 							<Button
 								onClick={handleExport}
 								options={[
@@ -311,12 +333,12 @@ function Preview() {
 							>
 								{t('export')}
 							</Button>
-						)}
+						) : null}
 					</Flex>
 				</Actions>
 				<AttributesFilter filters={filters} setFilters={setFilters} />
 				<PreviewContent>
-					{combinations && combinations?.length && (
+					{combinations && combinations?.length ? (
 						<VirtuosoGrid
 							style={{ height: '100%' }}
 							totalCount={filteredCombinations.length}
@@ -335,7 +357,7 @@ function Preview() {
 								/>
 							)}
 						/>
-					)}
+					) : null}
 				</PreviewContent>
 			</Main>
 		</>

@@ -41,8 +41,26 @@ export function getOut(config: Omit<Project, 'export'>) {
 		combinations.push(customToken.traits.join(','))
 	})
 
-	while (combinations.length < count) {
-		const template: Template = getWeightedRandom(Object.values(templates))
+	const templatesCount = {} as Record<string, number>
+	const limitReached = Object.fromEntries(
+		Object.keys(templates).map((template) => [template, false]),
+	)
+
+	while (combinations.length < Number(count)) {
+		const [templateId, template]: [string, Template] = getWeightedRandom(
+			Object.entries(templates),
+		)
+
+		if (template.count && templatesCount[templateId] >= template.count) {
+			limitReached[templateId] = true
+
+			if (Object.values(limitReached).every((limitReached) => limitReached)) {
+				break
+			} else {
+				continue
+			}
+		}
+
 		const templateAttributes = template?.attributes.map(
 			(attributeId) => attributes[attributeId],
 		)
@@ -91,6 +109,9 @@ export function getOut(config: Omit<Project, 'export'>) {
 		// If there's not an existing one already, push to the output
 		if (!combinations.find((traitGroup) => traitGroup === nextCombination)) {
 			combinations.push(nextCombination)
+
+			// Increment the template count
+			templatesCount[templateId] = (templatesCount[templateId] ?? 0) + 1
 		}
 	}
 

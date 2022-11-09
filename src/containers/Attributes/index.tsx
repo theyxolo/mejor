@@ -38,10 +38,13 @@ import Slider from 'components/Slider'
 import UploadDialog from 'modules/UploadDialog'
 
 import {
+	useAttributeKeys,
 	useField,
 	useFieldProps,
 	useFieldValue,
 	useSetFieldsValue,
+	useSetFieldValue,
+	useTraitKeys,
 } from 'lib/recoil'
 import { getAssetUrl } from 'lib'
 import { BlendMode, MICRO_ID } from 'lib/constants'
@@ -49,7 +52,7 @@ import { Attribute, Project } from 'lib/types'
 
 import { AssetImg } from './styled'
 
-function Trait({
+function TraitItem({
 	id,
 	project,
 	address,
@@ -111,9 +114,9 @@ function Trait({
 
 	return (
 		<Flex flexDirection="column" gap="var(--space--medium)">
-			{assetKey && (
+			{assetKey ? (
 				<AssetImg src={getAssetUrl(assetKey, { address, project })} />
-			)}
+			) : null}
 			<Flex gap="var(--space--small)" style={{ width: '100%' }}>
 				<input
 					type="text"
@@ -235,6 +238,40 @@ function Trait({
 	)
 }
 
+function AttributeHeader({ id }: { id: string }) {
+	const { t } = useTranslation()
+	const nameProps = useFieldProps<string>(`attributes.${id}.name`)
+	const [name, setName] = useState<string>(nameProps.value)
+	const aliasProps = useFieldProps<string>(`attributes.${id}.alias`)
+
+	return (
+		<div
+			style={{
+				gap: 8,
+				display: 'flex',
+				alignItems: 'center',
+				justifyContent: 'space-between',
+			}}
+		>
+			<input
+				style={{ fontSize: '1.5rem' }}
+				type="text"
+				value={name}
+				onChange={(e) => setName(e.target.value)}
+				onBlur={(e) => nameProps.onChange(e)}
+			/>
+			<label htmlFor="">
+				<b>{t('alias')}</b>
+				<input
+					type="text"
+					style={{ width: '100%', display: 'block' }}
+					{...aliasProps}
+				/>
+			</label>
+		</div>
+	)
+}
+
 function AttributeItem({
 	id,
 	onAdd,
@@ -252,8 +289,8 @@ function AttributeItem({
 		traitId: string
 	}) => void
 }) {
-	const { address } = useAccount()
 	const { t } = useTranslation()
+	const { address } = useAccount()
 	const { projectId } = useParams()
 
 	const [traits, setTraits] = useField<Attribute['traits']>(
@@ -262,30 +299,11 @@ function AttributeItem({
 	const [showInMetadata, setShowInMetadata] = useField(
 		`attributes.${id}.showInMetadata`,
 	)
-	const nameProps = useFieldProps<string>(`attributes.${id}.name`)
-	const aliasProps = useFieldProps<string>(`attributes.${id}.alias`)
 
 	return (
 		<Fragment>
 			<Flex justifyContent="space-between" alignItems="center">
-				<div
-					style={{
-						gap: 8,
-						display: 'flex',
-						alignItems: 'center',
-						justifyContent: 'space-between',
-					}}
-				>
-					<input style={{ fontSize: '1.5rem' }} type="text" {...nameProps} />
-					<label htmlFor="">
-						<b>{t('alias')}</b>
-						<input
-							type="text"
-							style={{ width: '100%', display: 'block' }}
-							{...aliasProps}
-						/>
-					</label>
-				</div>
+				<AttributeHeader id={id} />
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Button style={{ width: 40, height: 40, padding: 0 }}>
@@ -327,19 +345,14 @@ function AttributeItem({
 				gridTemplateColumns="repeat(auto-fill, minmax(150px, 1fr))"
 			>
 				{traits?.map((traitId: string) => (
-					<Trait
+					<TraitItem
 						key={traitId}
 						address={address!}
 						project={projectId!}
 						onDelete={() =>
 							setTraits(traits.filter((t: string) => t !== traitId))
 						}
-						onReplace={(traitId) =>
-							onReplace?.({
-								traitId,
-								attributeId: id,
-							})
-						}
+						onReplace={(traitId) => onReplace?.({ traitId, attributeId: id })}
 						attributeId={id}
 						id={traitId}
 					/>
@@ -357,40 +370,67 @@ function Attributes() {
 		boolean | { attributeId: string; traitId?: string }
 	>(false)
 
-	const [attributes, setAttributes] =
-		useField<Project['attributes']>('attributes')
-	const [traits, setTraits] = useField<Project['traits']>('traits')
+	const setAttributes = useSetFieldValue('attributes')
+	const setTraits = useSetFieldValue('traits')
+	const traitKeys = useTraitKeys()
+	const attributeKeys = useAttributeKeys()
 
-	const hasTraits = Object.keys(traits ?? {})?.length > 0
-
-	const memoAttributes = useMemo(
-		() => Object.keys(attributes ?? {}),
-		[attributes],
-	)
+	const hasTraits = traitKeys?.length > 0
 
 	function handleUpload(assets: any) {
 		setIsAddingAttribute(false)
-
-		const isReplace =
-			typeof isAddingAttribute === 'object' && isAddingAttribute?.traitId
 
 		const attributeId =
 			typeof isAddingAttribute === 'object'
 				? isAddingAttribute.attributeId
 				: nanoid(MICRO_ID)
-		const existingAttribute = attributes[attributeId]
 
-		const mappedAssets = isReplace
-			? [
-					[
-						isAddingAttribute?.traitId!,
-						{
-							...traits[isAddingAttribute?.traitId!],
-							assetKey: assets[0].assetKey,
-						},
-					],
-			  ]
-			: assets.map((asset: any) => [
+		const replacedTrait =
+			typeof isAddingAttribute === 'object' && isAddingAttribute?.traitId
+
+		setAttributes((prev: any) => {
+			const existingAttribute = prev[attributeId]
+			const traitsKeys = assets.map((asset: any) => asset.id)
+			console.log({ existingAttribute, traitsKeys })
+
+			const existingTraits =
+				existingAttribute?.traits?.filter(
+					(traitId: string) => traitId !== replacedTrait,
+				) ?? []
+
+			return {
+				...prev,
+				[attributeId]: {
+					name: existingAttribute?.name ?? `New attribute ${nanoid(MICRO_ID)}`,
+					showInMetadata: existingAttribute?.showInMetadata ?? true,
+					blendMode: existingAttribute?.blendMode ?? BlendMode.normal,
+					weight: existingAttribute?.weight ?? '100%',
+					traits: [...(existingTraits ?? []), ...traitsKeys],
+				},
+			}
+		})
+
+		setTraits((prev: any) => {
+			if (replacedTrait) {
+				console.log('NEW', assets[0])
+				console.log({ replacedTrait })
+
+				const { [isAddingAttribute?.traitId!]: _, ...rest } = prev
+
+				console.log({
+					isAddingAttribute,
+					prev,
+					assets,
+				})
+				return {
+					...rest,
+					[assets[0].id!]: {
+						...prev[isAddingAttribute?.traitId!],
+						assetKey: assets[0].assetKey,
+					},
+				}
+			} else {
+				const mappedAssets = assets.map((asset: any) => [
 					asset.id,
 					{
 						name: asset.name,
@@ -398,25 +438,14 @@ function Attributes() {
 						showInMetadata: true,
 						assetKey: asset.assetKey,
 					},
-			  ])
+				])
 
-		const traitsKeys = mappedAssets.map((a: any) => a[0])
-
-		setTraits((prev) => ({
-			...prev,
-			...Object.fromEntries(mappedAssets),
-		}))
-
-		setAttributes((prev) => ({
-			...prev,
-			[attributeId]: {
-				name: existingAttribute?.name ?? `New attribute ${nanoid(MICRO_ID)}`,
-				showInMetadata: existingAttribute?.showInMetadata ?? true,
-				blendMode: existingAttribute?.blendMode ?? BlendMode.normal,
-				weight: existingAttribute?.weight ?? '100%',
-				traits: [...(existingAttribute?.traits ?? []), ...traitsKeys],
-			},
-		}))
+				return {
+					...prev,
+					...Object.fromEntries(mappedAssets),
+				}
+			}
+		})
 	}
 
 	if (!hasTraits) {
@@ -425,13 +454,13 @@ function Attributes() {
 
 	return (
 		<>
-			{isAddingAttribute && (
+			{isAddingAttribute ? (
 				<UploadDialog
 					onClose={() => setIsAddingAttribute(false)}
 					onUpload={handleUpload}
 					isMultiple={!(isAddingAttribute as any).traitId}
 				/>
-			)}
+			) : null}
 			<Flex
 				marginBottom="var(--space--large)"
 				justifyContent="space-between"
@@ -444,7 +473,7 @@ function Attributes() {
 				</Button>
 			</Flex>
 			<Grid gap="var(--space--medium)">
-				{memoAttributes.map((key: string) => (
+				{attributeKeys?.map((key: string) => (
 					<AttributeItem
 						key={key}
 						id={key}

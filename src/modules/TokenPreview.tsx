@@ -77,12 +77,19 @@ function TokenPreview({
 					/>
 				))}
 			</TokenContent>
-			{name && (
-				<TokenName>
+			{Boolean(name) && (
+				<TokenName
+					style={{
+						backgroundColor:
+							assets.length === 1 ? 'var(--colors--tint)' : undefined,
+						color: assets.length === 1 ? 'white' : undefined,
+						borderColor: assets.length === 1 ? 'var(--colors--uva)' : undefined,
+					}}
+				>
 					{name
 						?.replace('{{number}}', String(number))
 						.replace?.('{{project}}', projectName ?? '') ?? number}
-					{hasWarning && (
+					{Boolean(hasWarning) && (
 						<AlertTriangle
 							size={16}
 							style={{ display: 'inline-block' }}

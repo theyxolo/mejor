@@ -8,12 +8,15 @@ import {
 } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
 import { ErrorBoundary } from '@sentry/react'
+import { useTranslation } from 'react-i18next'
 
 import Loading from 'modules/Loading'
 
 import Button from 'components/Button'
 
-import { configAtom } from 'lib/recoil'
+import { configAtom, numberOfProjectsSelector } from 'lib/recoil'
+import { Grid } from 'components/system'
+import { Main } from 'GlobalStyled'
 
 const Configuration = lazy(() => import('containers/Configuration'))
 const Preview = lazy(() => import('containers/Preview'))
@@ -24,15 +27,23 @@ const Deploy = lazy(() => import('containers/Deploy'))
 
 function SelectProject() {
 	const config = useRecoilValue(configAtom)
+	const { t } = useTranslation()
 
 	return (
-		<>
-			{Object.entries(config?.projects ?? {}).map(([projectId, project]) => (
-				<Button as={Link} key={projectId} to={projectId}>
-					{project.name}
-				</Button>
-			))}
-		</>
+		<Main withPadding>
+			<h1>{t('screens.projects.title')}</h1>
+			<Grid
+				marginTop="var(--space--medium)"
+				gridTemplateColumns="repeat(auto-fit, minmax(200px,1fr))"
+				gap="var(--space--medium)"
+			>
+				{Object.entries(config?.projects ?? {}).map(([projectId, project]) => (
+					<Button as={Link} key={projectId} to={projectId}>
+						{project.name}
+					</Button>
+				))}
+			</Grid>
+		</Main>
 	)
 }
 
@@ -47,12 +58,10 @@ function ProjectOutlet() {
 }
 
 function Routes() {
-	const config = useRecoilValue(configAtom)
+	const projectIdsCount = useRecoilValue(numberOfProjectsSelector)
+	const hasProjects = projectIdsCount > 0
 
-	const projectIds = Object.keys(config?.projects ?? {})
-	const hasProjects = projectIds.length > 0
-
-	if (config === undefined) {
+	if (projectIdsCount === undefined) {
 		return <Loading center />
 	}
 

@@ -8,6 +8,7 @@ import {
 	RecoilLoadable,
 	useRecoilValue,
 	useSetRecoilState,
+	selector,
 } from 'recoil'
 import { setIn } from 'formik'
 import debounce from 'lodash.debounce'
@@ -80,6 +81,29 @@ export const configAtom = atom<UserConfig | null>({
 	effects: [syncStorageEffect],
 })
 
+export const numberOfProjectsSelector = selector({
+	key: 'config--projects__count',
+	get: ({ get }) => {
+		const config = get(configAtom)
+		const projectIds = Object.keys(config?.projects ?? {})
+		const projectsCount = projectIds.length
+		return projectsCount
+	},
+})
+
+export function useAttributeKeys() {
+	const { projectId } = useParams()
+	const value = useRecoilValue(attributeKeysStringSelector(projectId!))
+	return JSON.parse(value)
+}
+
+export function useTraitKeys() {
+	const { projectId } = useParams()
+	const stringValue = useRecoilValue(traitStringKeysSelector(projectId!))
+
+	return JSON.parse(stringValue)
+}
+
 export const projectSelector = selectorFamily<
 	Omit<Project, 'export'> | undefined,
 	string
@@ -92,6 +116,28 @@ export const projectSelector = selectorFamily<
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { export: _, ...project } = config?.projects?.[id] ?? {}
 			return project
+		},
+})
+
+export const attributeKeysStringSelector = selectorFamily<string, string>({
+	key: 'current-project--attributes',
+	get:
+		(id) =>
+		({ get }): any => {
+			const project = get(projectSelector(id))
+			const attributeKeys = Object.keys(project?.attributes ?? {})
+			return JSON.stringify(attributeKeys)
+		},
+})
+
+export const traitStringKeysSelector = selectorFamily<string, string>({
+	key: 'current-project--traits',
+	get:
+		(id) =>
+		({ get }): any => {
+			const project = get(projectSelector(id))
+			const traitKeys = Object.keys(project?.traits ?? {})
+			return JSON.stringify(traitKeys)
 		},
 })
 

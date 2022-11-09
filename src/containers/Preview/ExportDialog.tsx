@@ -211,8 +211,9 @@ function ExportDialog({
 								<ProgressIndicator
 									style={{
 										transform: `translateX(-${
+											
 											// eslint-disable-next-line no-magic-numbers
-											100 - (progress.percentage ?? 0)
+											100 - (progress.percentage ?? 1)
 										}%)`,
 									}}
 								/>

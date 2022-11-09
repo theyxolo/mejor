@@ -7,9 +7,10 @@ import styled from 'styled-components/macro'
 import { DndProvider, useDrag, useDrop } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { DragHandleDots2Icon } from '@radix-ui/react-icons'
-import { PlusCircle } from 'react-feather'
+import { Hash, Percent, PlusCircle } from 'react-feather'
 import type { Identifier, XYCoord } from 'dnd-core'
 import { nanoid } from 'nanoid'
+import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group'
 
 import TokenPreview from 'modules/TokenPreview'
 
@@ -27,6 +28,7 @@ import {
 } from 'lib/recoil'
 import { Project, Template } from 'lib/types'
 import { MICRO_ID } from 'lib/constants'
+import TextInput from 'components/TextInput'
 
 const Card = styled(Button)<{ $enabled: boolean; $isDragging: boolean }>`
 	cursor: ${({ $enabled }) => ($enabled ? 'move' : 'inherit')};
@@ -49,6 +51,27 @@ const ImgContainer = styled.div`
 	border-radius: 12px;
 	border: 1px solid var(--colors--border);
 	overflow: hidden;
+`
+
+const ToggleItem = styled(ToggleGroupPrimitive.Item)`
+	padding: 0;
+	height: 32px;
+	width: 32px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+
+	svg {
+		width: 16px;
+		height: 16px;
+		stroke-width: 3.5px;
+		display: block;
+	}
+
+	&[data-state='on'] {
+		background-color: var(--colors--tint);
+		color: white;
+	}
 `
 
 const TokenName = styled.p`
@@ -216,8 +239,10 @@ function TemplateItem({
 	const [weightValue, setWeight] = useField<Template['weight']>(
 		`templates.${id}.weight`,
 	)
+	const [count, setCount] = useField<Template['count']>(`templates.${id}.count`)
 
 	const weightValueInt = parseInt(weightValue?.replace('%', '') ?? '')
+	const hasWeight = Boolean(weightValue?.includes('%'))
 
 	const [items, setItems] = useState<string[]>(templateAttributes)
 
@@ -293,6 +318,14 @@ function TemplateItem({
 		[JSON.stringify(items)],
 	)
 
+	function handleWeightChange(value: string) {
+		if (value === 'false') {
+			setWeight(undefined)
+		} else {
+			setCount(undefined)
+		}
+	}
+
 	return (
 		<Flex
 			width="100%"
@@ -303,18 +336,41 @@ function TemplateItem({
 			<label htmlFor="">
 				<input style={{ fontSize: '1.5rem' }} {...templateNameProps} />
 			</label>
-			<Flex gap="var(--space--medium)">
-				<div style={{ flex: 1 }}>
-					<label style={{ flex: 1 }} htmlFor="">
-						<b>{t('weight')}</b>
-						<Slider
-							onValueChange={([value]) => setWeight(`${value}%`)}
-							value={[weightValueInt]}
+			<Flex width="100%" gap="var(--space--small)">
+				<ToggleGroupPrimitive.Root
+					onValueChange={handleWeightChange}
+					value={String(hasWeight)}
+					type="single"
+					defaultValue="weight"
+				>
+					<ToggleItem value="true">
+						<Percent />
+					</ToggleItem>
+					<ToggleItem value="false">
+						<Hash />
+					</ToggleItem>
+				</ToggleGroupPrimitive.Root>
+				{hasWeight ? (
+					<div style={{ flex: 1 }}>
+						<label style={{ flex: 1 }} htmlFor="">
+							<b>{t('weight')}</b>
+							<Slider
+								onValueChange={([value]) => setWeight(`${value}%`)}
+								value={[weightValueInt]}
+							/>
+						</label>
+					</div>
+				) : (
+					<div style={{ flex: 1 }}>
+						<TextInput
+							type="number"
+							value={count}
+							onChange={(event) => setCount(Number(event.target.value))}
 						/>
-					</label>
-					<p>{t('actual')} %</p>
-				</div>
+					</div>
+				)}
 			</Flex>
+			<p>{t('actual')} %</p>
 			<Grid gridTemplateColumns="1fr 1fr" gap="var(--space--large)">
 				<DndProvider backend={HTML5Backend}>
 					<div>
