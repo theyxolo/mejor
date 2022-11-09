@@ -249,7 +249,7 @@ function TemplateItem({
 	const allItems = items.concat(
 		Object.keys(attributes ?? {})
 			.map((key) => key)
-			.filter((key) => !items.includes?.(key)),
+			.filter((key) => !items?.includes?.(key)),
 	)
 
 	useEffect(() => {

@@ -76,7 +76,7 @@ function UploadZone({
 	async function uploadFiles(files: FileList) {
 		const mappedFiles = Array.from(files)
 			.filter(
-				({ name, type }) => name !== '.DS_Store' && type.includes('image'),
+				({ name, type }) => name !== '.DS_Store' && type?.includes('image'),
 			)
 			.map((file) => {
 				const path = file.webkitRelativePath?.split('/')

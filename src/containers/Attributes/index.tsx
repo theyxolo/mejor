@@ -84,7 +84,7 @@ function TraitItem({
 		const totalCount = combinations?.length
 		const appearancesCount = combinations
 			?.flat()
-			.filter((trait: string) => trait.includes(id)).length
+			.filter((trait: string) => trait?.includes(id)).length
 
 		return [
 			// eslint-disable-next-line no-magic-numbers
