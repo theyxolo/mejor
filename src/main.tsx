@@ -11,8 +11,9 @@ import { GlobalStyle } from 'GlobalStyled'
 
 import TopNav from 'modules/TopNav'
 
-import { chains, wagmiClient } from 'lib/web3'
+import { chains, wagmiClient } from 'lib/wagmi'
 import queryClient from 'lib/queryClient'
+
 import 'lib/i18n'
 import 'lib/sentry'
 import 'lib/analytics'

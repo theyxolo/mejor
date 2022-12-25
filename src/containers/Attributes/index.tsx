@@ -391,7 +391,6 @@ function Attributes() {
 		setAttributes((prev: any) => {
 			const existingAttribute = prev[attributeId]
 			const traitsKeys = assets.map((asset: any) => asset.id)
-			console.log({ existingAttribute, traitsKeys })
 
 			const existingTraits =
 				existingAttribute?.traits?.filter(
@@ -412,16 +411,9 @@ function Attributes() {
 
 		setTraits((prev: any) => {
 			if (replacedTrait) {
-				console.log('NEW', assets[0])
-				console.log({ replacedTrait })
-
+				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				const { [isAddingAttribute?.traitId!]: _, ...rest } = prev
 
-				console.log({
-					isAddingAttribute,
-					prev,
-					assets,
-				})
 				return {
 					...rest,
 					[assets[0].id!]: {

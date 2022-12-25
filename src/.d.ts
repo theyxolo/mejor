@@ -1,4 +1,9 @@
-declare global {}
+/// <reference types="vite-plugin-svgr/client" />
+/// <reference types="vite/client" />
+
+declare global {
+	const __APP_VERSION__: string
+}
 
 type Primitive = string | number | symbol
 

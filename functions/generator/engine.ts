@@ -157,7 +157,7 @@ const handler = async (
 			),
 			dna: combinations[index].map((trait) => trait.split('.')[0]).join(':'),
 			edition: index + 1,
-			compiler: 'Mejor by They Xolo',
+			compiler: 'Mejor by Tonim',
 			image: imagesCID
 				? `ipfs://${imagesCID}/${index + 1}.${artworkFormat}`
 				: '',

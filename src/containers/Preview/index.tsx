@@ -185,11 +185,13 @@ function AttributesFilter({
 													>
 														{count}
 														<span style={{ fontSize: '0.7rem', opacity: 0.6 }}>
-															{Math.round(
-																// eslint-disable-next-line no-magic-numbers
-																(count / combinations.length) * 1000,
-																// eslint-disable-next-line no-magic-numbers
-															) / 10}
+															{combinations
+																? Math.round(
+																		// eslint-disable-next-line no-magic-numbers
+																		(count / combinations.length) * 1000,
+																		// eslint-disable-next-line no-magic-numbers
+																  ) / 10
+																: '-'}
 															%
 														</span>
 													</Flex>

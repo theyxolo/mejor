@@ -15,6 +15,9 @@ export default defineConfig({
 		// Used for 'styled-components/macro'
 		macrosPlugin(),
 	],
+	define: {
+		__APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+	},
 	resolve: {
 		alias: {
 			process: 'process/browser',

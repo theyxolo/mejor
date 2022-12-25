@@ -14,7 +14,7 @@ const { chains, provider } = configureChains(
 )
 
 const { connectors } = getDefaultWallets({
-	appName: 'Mejor by They Xolo',
+	appName: 'Mejor by Tonim',
 	chains,
 })
 
