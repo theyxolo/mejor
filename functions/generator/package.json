@@ -9,28 +9,28 @@
 		"postinstall": "rm -rf node_modules/sharp && npm install --platform=linux --arch=x64 sharp"
 	},
 	"dependencies": {
-		"@aws-sdk/client-s3": "3.171.0",
-		"@aws-sdk/lib-storage": "3.171.0",
-		"@aws-sdk/s3-request-presigner": "3.173.0",
-		"ethers": "5.7.1",
+		"@aws-sdk/client-s3": "3.238.0",
+		"@aws-sdk/lib-storage": "3.238.0",
+		"@aws-sdk/s3-request-presigner": "3.238.0",
+		"ethers": "5.7.2",
 		"file-type": "16.5.3",
 		"jszip": "3.10.1",
 		"nft.storage": "^7.0.0",
 		"p-queue": "6.6.2",
-		"pusher": "5.1.1-beta",
-		"sharp": "^0.31.1",
+		"pusher": "5.1.2",
+		"sharp": "^0.31.3",
 		"slugify": "^1.6.5",
-		"yargs": "^17.5.1"
+		"yargs": "^17.6.2"
 	},
 	"devDependencies": {
-		"@types/aws-lambda": "^8.10.104",
+		"@types/aws-lambda": "^8.10.109",
 		"@types/sharp": "^0.31.0",
 		"eslint": "^7.32.0",
-		"serverless": "^3.21.0",
+		"serverless": "^3.26.0",
 		"serverless-apigw-binary": "^0.4.4",
 		"serverless-bundle": "^5.5.0",
 		"serverless-offline": "^9.1.6",
-		"serverless-plugin-typescript": "^2.1.2",
-		"typescript": "^4.7.4"
+		"serverless-plugin-typescript": "^2.1.4",
+		"typescript": "^4.9.4"
 	}
 }

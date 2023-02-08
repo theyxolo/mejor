@@ -2,6 +2,9 @@ import styled, { createGlobalStyle } from 'styled-components'
 
 export const GlobalStyle = createGlobalStyle`
 	:root {
+		--font--system: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+			Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+
 		--colors--background: #111;
 		--colors--background_transparent: rgba(16, 16, 16, 0.9);
 		--colors--overlay: rgba(0, 0, 0, 0.3);
@@ -21,7 +24,7 @@ export const GlobalStyle = createGlobalStyle`
 			--colors--overlay_alternate: rgba(0, 0, 0, 0.1);
 			--colors--background_alternate: #f2f2f2;
 			--colors--background_opposite: #111;
-			--colors--border: #e0e0e0;
+			--colors--border: #333;
 			--colors--border_alternate: #f2f2f2;
 			--colors--text: #000;
 			--colors--text_opposite: #fff;
@@ -65,11 +68,18 @@ export const GlobalStyle = createGlobalStyle`
 		box-sizing: border-box;
 	}
 
+	@font-face {
+		font-family: "Unbounded";
+		src: url("/fonts/Unbounded/Unbounded-VariableFont_wght.ttf");
+		font-weight: 125 950;
+		font-stretch: 75% 125%;
+		font-style: normal;
+	}
+
 	html,
 	body {
 		margin: 0;
-		font-family: SFRounded, ui-rounded, SF Pro Rounded, system-ui, Helvetica Neue,
-			Arial, Helvetica, sans-serif;
+		font-family: var(--font--system);
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
 
@@ -81,8 +91,6 @@ export const GlobalStyle = createGlobalStyle`
 
 		color: var(--colors--text);
 		background-color: var(--colors--background);
-		font-family: SFRounded, ui-rounded, SF Pro Rounded, system-ui, Helvetica Neue,
-			Arial, Helvetica, sans-serif;
 	}
 
 	h1,
@@ -93,8 +101,7 @@ export const GlobalStyle = createGlobalStyle`
 	h6,
 	button {
 		font-weight: 900;
-		font-family: SFRounded, ui-rounded, SF Pro Rounded, system-ui, Helvetica Neue,
-			Arial, Helvetica, sans-serif;
+		font-family: 'Unbounded', system-ui, Helvetica Neue, Arial, Helvetica, sans-serif;
 	}
 
 	button {
@@ -155,8 +162,7 @@ export const GlobalStyle = createGlobalStyle`
 	input[type="text"],
 	input[type="email"],
 	input[type="number"] {
-		font-family: SFRounded, ui-rounded, SF Pro Rounded, system-ui, Helvetica Neue,
-			Arial, Helvetica, sans-serif;
+		font-family: var(--font--system);
 
 		&[readonly] {
 			border-color: var(--colors--border_alternate);
@@ -218,7 +224,7 @@ export const Main = styled.main<{ withPadding?: boolean; center?: boolean }>`
 
 	hr {
 		border: none;
-		border-top: 1px solid var(--colors--border);
+		border-top: 2px solid var(--colors--border);
 		margin: 20px 0;
 	}
 `

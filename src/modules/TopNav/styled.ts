@@ -58,9 +58,9 @@ export const Header = styled.div`
 				position: absolute;
 				bottom: -2px;
 				left: 0;
-				height: 3px;
+				height: 4px;
 				width: 100%;
-				background-color: var(--colors--background_opposite);
+				background-color: var(--colors--border);
 			}
 		}
 	}

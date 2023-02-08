@@ -18,12 +18,12 @@ import { configAtom, numberOfProjectsSelector } from 'lib/recoil'
 import { Grid } from 'components/system'
 import { Main } from 'GlobalStyled'
 
-const Configuration = lazy(() => import('containers/Configuration'))
-const Preview = lazy(() => import('containers/Preview'))
-const Upload = lazy(() => import('containers/Upload'))
-const Settings = lazy(() => import('containers/Settings'))
 const Error = lazy(() => import('containers/Error'))
+const Upload = lazy(() => import('containers/Upload'))
 const Deploy = lazy(() => import('containers/Deploy'))
+const Preview = lazy(() => import('containers/Preview'))
+const Settings = lazy(() => import('containers/Settings'))
+const Configuration = lazy(() => import('containers/Configuration'))
 
 function SelectProject() {
 	const config = useRecoilValue(configAtom)
@@ -33,9 +33,10 @@ function SelectProject() {
 		<Main withPadding>
 			<h1>{t('screens.projects.title')}</h1>
 			<Grid
-				marginTop="var(--space--medium)"
-				gridTemplateColumns="repeat(auto-fit, minmax(200px,1fr))"
 				gap="var(--space--medium)"
+				marginTop="var(--space--medium)"
+				gridTemplateColumns="repeat(auto-fit, 200px)"
+				gridAutoRows="200px"
 			>
 				{Object.entries(config?.projects ?? {}).map(([projectId, project]) => (
 					<Button as={Link} key={projectId} to={projectId}>

@@ -1,11 +1,12 @@
 import { getDefaultWallets } from '@rainbow-me/rainbowkit'
-import { chain, configureChains, createClient } from 'wagmi'
+import { configureChains, createClient } from 'wagmi'
 import { infuraProvider } from 'wagmi/providers/infura'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
+import { goerli, polygonMumbai } from 'wagmi/chains'
 
 const { chains, provider } = configureChains(
-	[chain.goerli, chain.polygonMumbai],
+	[goerli, polygonMumbai],
 	[
 		infuraProvider({ apiKey: import.meta.env.VITE_APP_INFURA_KEY }),
 		alchemyProvider({ apiKey: import.meta.env.VITE_APP_ALCHEMY_ID }),

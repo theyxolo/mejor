@@ -36,10 +36,10 @@ export const TabItem = styled(Tabs.Trigger)`
 			content: '';
 			position: absolute;
 			top: 0;
-			right: -2px;
+			right: 0;
 			width: 3px;
 			height: 100%;
-			background-color: var(--colors--background_opposite);
+			background-color: var(--colors--border);
 		}
 	}
 `
@@ -47,7 +47,7 @@ export const TabItem = styled(Tabs.Trigger)`
 export const TabList = styled(Tabs.List)`
 	display: flex;
 	flex-direction: column;
-	border-right: 2px solid var(--colors--border);
+	background-color: #f4f4f0;
 	min-height: 100%;
 	padding: 8px 0;
 	gap: 4px;
@@ -59,7 +59,7 @@ export const TabRoot = styled(Tabs.Root)`
 `
 
 export const TabContent = styled(Tabs.Content)`
-	padding: 10px;
+	padding: var(--space--medium) var(--space--large);
 	flex: 1;
 	overflow: scroll;
 `

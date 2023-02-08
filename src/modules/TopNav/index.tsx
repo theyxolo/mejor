@@ -75,7 +75,7 @@ function TopNav() {
 						</span>
 					</Flex>
 				</Link>
-				{isProjectId && (
+				{Boolean(isProjectId) && (
 					<Select onValueChange={handleSelectChange} value={projectId}>
 						<SelectTrigger aria-label="Food">
 							<SelectValue placeholder="Select a fruit…" />
