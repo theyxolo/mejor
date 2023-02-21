@@ -76,7 +76,6 @@ const ToggleItem = styled(ToggleGroupPrimitive.Item)`
 
 const TokenName = styled.p`
 	width: 100%;
-	font-weight: 700;
 `
 
 interface DragItem {
@@ -334,7 +333,7 @@ function TemplateItem({
 			gap="var(--space--medium)"
 		>
 			<label htmlFor="">
-				<input style={{ fontSize: '1.5rem' }} {...templateNameProps} />
+				<input {...templateNameProps} />
 			</label>
 			<Flex width="100%" gap="var(--space--small)">
 				<ToggleGroupPrimitive.Root

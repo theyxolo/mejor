@@ -55,14 +55,11 @@ function Content({ children, ...props }: any) {
 }
 
 const StyledTitle = styled(DialogPrimitive.Title)`
-	font-weight: 900;
-	font-size: 2rem;
 	margin-bottom: 16px;
 `
 
 const StyledDescription = styled(DialogPrimitive.Description)`
 	margin: 10px 0 20px;
-	font-size: 15px;
 	line-height: 1.5;
 `
 

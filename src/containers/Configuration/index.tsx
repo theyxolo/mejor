@@ -29,7 +29,7 @@ const TABS = [
 		Component: memo(Templates),
 	},
 	{
-		key: 'token',
+		key: 'metadata',
 		icon: <Image size={18} strokeWidth={2.5} />,
 		Component: memo(Token),
 	},

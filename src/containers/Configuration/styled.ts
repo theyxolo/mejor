@@ -2,14 +2,11 @@ import * as Tabs from '@radix-ui/react-tabs'
 import styled from 'styled-components/macro'
 
 export const TabItem = styled(Tabs.Trigger)`
-	font-weight: 900;
-	width: 100%;
 	text-align: left;
-	font-size: 0.9rem;
+	font-size: var(--font_size--small);
 	background: transparent;
 	text-align: left;
 	min-height: 40px;
-	min-width: 150px;
 	justify-content: flex-start;
 	position: relative;
 
@@ -19,7 +16,7 @@ export const TabItem = styled(Tabs.Trigger)`
 		align-items: center;
 		gap: var(--space--medium);
 		padding: 10px 14px;
-		opacity: 0.8;
+		opacity: 0.65;
 		border-radius: var(--border_radius--small);
 
 		&:hover {
@@ -31,31 +28,19 @@ export const TabItem = styled(Tabs.Trigger)`
 		span {
 			opacity: 1;
 		}
-
-		&:after {
-			content: '';
-			position: absolute;
-			top: 0;
-			right: 0;
-			width: 3px;
-			height: 100%;
-			background-color: var(--colors--border);
-		}
 	}
 `
 
 export const TabList = styled(Tabs.List)`
 	display: flex;
-	flex-direction: column;
-	background-color: #f4f4f0;
-	min-height: 100%;
+	flex-direction: row;
 	padding: 8px 0;
-	gap: 4px;
 `
 
 export const TabRoot = styled(Tabs.Root)`
-	min-height: 0;
-	display: flex;
+	max-width: 1200px;
+	margin: 0 auto;
+	width: 100%;
 `
 
 export const TabContent = styled(Tabs.Content)`

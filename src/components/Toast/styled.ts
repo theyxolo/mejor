@@ -79,20 +79,19 @@ export const Toast = styled(ToastPrimitive.Root)`
 export const Title = styled(ToastPrimitive.Title)`
 	grid-area: title;
 	margin-bottom: var(--space--xxsmall);
-	font-weight: 500;
 	color: var(--colors--text);
-	font-size: 0.9rem;
+	font-size: var(--font_size--small);
 `
 
 export const Description = styled(ToastPrimitive.Description)`
 	grid-area: description;
 	margin: 0;
 	color: var(--colors--text);
-	font-size: 0.8rem;
+	font-size: var(--font_size--small);
 	line-height: 1.3;
 `
 
 export const Action = styled(ToastPrimitive.Action)`
-	font-size: 0.8rem;
+	font-size: var(--font_size--small);
 	color: var(--colors--text);
 `

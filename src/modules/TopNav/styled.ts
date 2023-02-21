@@ -1,11 +1,13 @@
 import styled from 'styled-components/macro'
 
 export const NavList = styled.ul`
-	padding: 0 20px;
 	display: flex;
 	justify-content: center;
-	gap: 10px;
 	height: 100%;
+
+	a {
+		opacity: 0.7;
+	}
 `
 
 export const Header = styled.div`
@@ -13,23 +15,16 @@ export const Header = styled.div`
 	justify-content: space-between;
 	align-items: center;
 	padding: 0 10px;
-	font-size: 1rem;
-	grid-template-columns: repeat(3, 1fr);
-	border-bottom: 2px solid var(--colors--border);
-	font-family: SF Pro;
-
-	h1 {
-		font-weight: 900;
-		font-size: 1.5rem;
-	}
+	grid-template-columns: repeat(2, 1fr);
+	border-bottom: 1px solid var(--colors--border);
 
 	a {
+		font-weight: 700;
 		display: inline-flex;
 		align-items: center;
 		text-decoration: none;
 		color: inherit;
 		min-height: 40px;
-		font-weight: 800;
 		height: 100%;
 		position: relative;
 
@@ -41,7 +36,6 @@ export const Header = styled.div`
 			padding: var(--space--medium) var(--space--large);
 			border-radius: 16px;
 			overflow: hidden;
-			opacity: 0.8;
 
 			&:hover {
 				background-color: var(--colors--overlay_alternate);
@@ -50,17 +44,16 @@ export const Header = styled.div`
 		}
 
 		&[aria-current='page'] {
-			span {
-				opacity: 1;
-			}
-			&:after {
+			opacity: 1;
+
+			span:after {
 				content: '';
 				position: absolute;
-				bottom: -2px;
+				bottom: 0;
 				left: 0;
-				height: 4px;
+				height: 2px;
 				width: 100%;
-				background-color: var(--colors--border);
+				background-color: #333;
 			}
 		}
 	}

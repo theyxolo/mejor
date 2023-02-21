@@ -10,18 +10,18 @@ import {
 } from './DropdownMenu'
 
 const buttonStyle = css<{ $primary?: boolean }>`
+	font-weight: 700;
+	cursor: default;
 	text-decoration: none;
-	background-color: ${({ $primary }) =>
-		$primary ? 'var(--colors--tint)' : 'var(--colors--text)'};
-	padding: 5px 20px;
+	background-color: var(--colors--background);
+	padding: 4px 12px;
 	border: none;
-	color: ${({ $primary }) =>
-		$primary ? 'var(--colors--text)' : 'var(--colors--background)'};
+	color: var(--colors--text);
 	box-shadow: ${({ $primary }) =>
 		$primary ? '0 0 9px rgb(157, 116, 235,0.75)' : ''};
-	border-radius: 20px;
-	font-weight: 800;
-	min-height: 30px;
+	border-radius: 12px;
+	min-height: 42px;
+	min-width: 42px;
 `
 
 const StyledButton = styled.button<{ $primary?: boolean }>`
@@ -30,10 +30,6 @@ const StyledButton = styled.button<{ $primary?: boolean }>`
 	display: flex;
 	justify-content: center;
 	align-items: center;
-
-	font-family: 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-		'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
-		'Helvetica Neue', sans-serif;
 
 	&:hover {
 		${({ $primary }) => ($primary ? 'background-color: #7B5AB8;' : '')}
@@ -107,5 +103,5 @@ const Button = forwardRef(function ButtonWithRef(
 	return <StyledButton ref={ref} {...props} />
 })
 
-export { Icon }
+export { Icon, buttonStyle }
 export default Button

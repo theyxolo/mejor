@@ -3,7 +3,6 @@ import styled from 'styled-components/macro'
 export const TraitContent = styled.div`
 	display: grid;
 	width: 100%;
-	font-size: 1rem;
 	flex-direction: row;
 	align-items: center;
 	grid-template-columns: auto 1fr;

@@ -1,28 +1,18 @@
 import * as SelectPrimitive from '@radix-ui/react-select'
 import styled, { css } from 'styled-components/macro'
 
+import { buttonStyle } from './Button'
+
 const StyledTrigger = styled(SelectPrimitive.SelectTrigger)`
-	all: unset;
-	display: inline-flex;
+	${buttonStyle};
+	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	border-radius: var(--border_radius--small);
-	font-size: 13px;
-	line-height: 1;
-	min-height: 35px;
-	padding: 4px 16px;
-	gap: 5px;
-	background-color: var(--colors--background);
-	color: var(--colors--text);
-	border: 1px solid var(--colors--border);
-	font-weight: 800;
+	/* padding: 0; */
 
 	&:hover {
 		background-color: mauve;
 	}
-	&:focus {
-		box-shadow: 0 0 0 2px var(--colors--text);
-	}
+
 	&[data-placeholder] {
 		color: violet;
 	}
@@ -54,7 +44,6 @@ function Content({ children, ...props }: any) {
 
 const StyledItem = styled(SelectPrimitive.Item)`
 	all: unset;
-	font-size: 13px;
 	line-height: 1;
 	color: var(--colors--text);
 	border-radius: 3px;
@@ -65,7 +54,6 @@ const StyledItem = styled(SelectPrimitive.Item)`
 	padding: 0 35px 0 16px;
 	position: relative;
 	user-select: none;
-	font-weight: 800;
 
 	&[data-disabled] {
 		color: mauve;
@@ -80,10 +68,8 @@ const StyledItem = styled(SelectPrimitive.Item)`
 
 const StyledLabel = styled(SelectPrimitive.Label)`
 	padding: 24px 16px 0;
-	font-size: 12px;
 	line-height: 25px;
 	color: mauve;
-	font-weight: 800;
 	opacity: 0.8;
 `
 

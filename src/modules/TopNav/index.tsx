@@ -1,11 +1,11 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import {
-	Eye,
-	Edit,
-	ChevronDown,
-	CloudLightning,
-	Settings as SettingsIcon,
-} from 'react-feather'
+	IconChevronDown,
+	IconRocket,
+	IconPalette,
+	IconSettings,
+	IconGridDots,
+} from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import * as AccessibleIcon from '@radix-ui/react-accessible-icon'
@@ -49,6 +49,33 @@ function TopNav() {
 		navigate(`/${value}`)
 	}
 
+	function renderHeading() {
+		if (isProjectId) {
+			return '🖼'
+		}
+
+		return (
+			<>
+				🖼 mejor{' '}
+				<span
+					style={{
+						backgroundColor: 'var(--colors--pina)',
+						fontFamily: "'Helvetica Neue'",
+						fontWeight: '900',
+						color: 'black',
+						borderRadius: 10,
+						padding: '2px 8px',
+						fontSize: '0.8rem',
+						opacity: 1,
+						lineHeight: '12px',
+					}}
+				>
+					BETA
+				</span>
+			</>
+		)
+	}
+
 	return (
 		<Styled.Header>
 			<Flex height="var(--size--top_nav)" alignItems="center" gap="8px">
@@ -57,30 +84,23 @@ function TopNav() {
 						as="h1"
 						alignItems="center"
 						gap="var(--space--small)"
-						style={{ whiteSpace: 'nowrap' }}
+						style={{
+							whiteSpace: 'nowrap',
+							minWidth: 40,
+							textAlign: 'center',
+							display: 'inline-block',
+						}}
 					>
-						🖼 mejor{' '}
-						<span
-							style={{
-								backgroundColor: 'var(--colors--pina)',
-								color: 'black',
-								borderRadius: 10,
-								padding: '2px 8px',
-								fontSize: '0.8rem',
-								opacity: 1,
-								lineHeight: '12px',
-							}}
-						>
-							BETA
-						</span>
+						{renderHeading()}
 					</Flex>
 				</Link>
+				<span style={{ height: '50%', width: 2, backgroundColor: 'gray' }} />
 				{Boolean(isProjectId) && (
 					<Select onValueChange={handleSelectChange} value={projectId}>
-						<SelectTrigger aria-label="Food">
-							<SelectValue placeholder="Select a fruit…" />
+						<SelectTrigger aria-label={t('project')}>
+							<SelectValue placeholder={t('selectAProject')} />
 							<SelectIcon>
-								<ChevronDown />
+								<IconChevronDown />
 							</SelectIcon>
 						</SelectTrigger>
 						<SelectContent>
@@ -98,33 +118,32 @@ function TopNav() {
 						</SelectContent>
 					</Select>
 				)}
-			</Flex>
-			{isProjectId ? (
-				<>
+				{isProjectId ? (
 					<Styled.NavList>
-						<NavLink to={`/${projectId}/token`}>
-							<span>
-								<Edit size={20} />
-								{t('settings')}
-							</span>
-						</NavLink>
 						<NavLink to={`/${projectId}/preview`}>
 							<span>
-								<Eye size={20} />
+								<IconGridDots />
 								{t('preview')}
+							</span>
+						</NavLink>
+						<NavLink to={`/${projectId}/token`}>
+							<span>
+								<IconPalette />
+								{t('artwork')}
 							</span>
 						</NavLink>
 						<NavLink to={`/${projectId}/deploy`}>
 							<span>
-								<CloudLightning size={20} />
+								<IconRocket />
 								{t('deploy')}
 							</span>
 						</NavLink>
 					</Styled.NavList>
-				</>
-			) : (
-				<span />
-			)}
+				) : (
+					<span />
+				)}
+			</Flex>
+
 			<Flex
 				height="100%"
 				justifySelf="flex-end"
@@ -135,7 +154,7 @@ function TopNav() {
 				<NavLink to={`/${projectId}/settings`}>
 					<span>
 						<AccessibleIcon.Root label={t('appSettings')}>
-							<SettingsIcon size={20} />
+							<IconSettings />
 						</AccessibleIcon.Root>
 					</span>
 				</NavLink>

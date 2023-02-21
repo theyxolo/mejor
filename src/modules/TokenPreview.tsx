@@ -1,5 +1,5 @@
 import styled from 'styled-components/macro'
-import { AlertTriangle } from 'react-feather'
+import { IconAlertTriangle } from '@tabler/icons-react'
 
 import { Box } from 'components/system'
 
@@ -7,8 +7,7 @@ import { getAssetUrl } from 'lib'
 
 const TokenName = styled.p`
 	word-break: break-all;
-	font-weight: 700;
-	font-size: 0.85rem;
+	font-size: var(--font_size--small);
 	border: 1px solid var(--colors--border);
 	padding: var(--space--medium) var(--space--medium);
 	border-bottom-left-radius: var(--border_radius--small);
@@ -90,7 +89,7 @@ function TokenPreview({
 						?.replace('{{number}}', String(number))
 						.replace?.('{{project}}', projectName ?? '') ?? number}
 					{Boolean(hasWarning) && (
-						<AlertTriangle
+						<IconAlertTriangle
 							size={16}
 							style={{ display: 'inline-block' }}
 							strokeWidth={3}

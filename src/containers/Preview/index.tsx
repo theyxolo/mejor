@@ -86,7 +86,7 @@ function AttributesFilter({
 					<Root asChild key={key}>
 						<li
 							style={{
-								border: '2px solid var(--colors--border)',
+								border: 'var(--borders--text_input)',
 								borderRadius: 10,
 								overflow: 'hidden',
 							}}

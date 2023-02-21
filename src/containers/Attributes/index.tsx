@@ -254,7 +254,6 @@ function AttributeHeader({ id }: { id: string }) {
 			}}
 		>
 			<input
-				style={{ fontSize: '1.5rem' }}
 				type="text"
 				value={name}
 				onChange={(e) => setName(e.target.value)}

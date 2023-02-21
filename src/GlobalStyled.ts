@@ -11,10 +11,18 @@ export const GlobalStyle = createGlobalStyle`
 		--colors--overlay_alternate: rgba(255, 255, 255, 0.1);
 		--colors--background_alternate: #222;
 		--colors--background_opposite: #fff;
-		--colors--border: #393939;
+		--colors--border: #444;
 		--colors--border_alternate: #222;
 		--colors--text: #fff;
 		--colors--text_opposite: #000;
+
+		--font_size--larger: 1.5rem;
+		--font_size--large: 1.2rem;
+		--font_size--regular: 1rem;
+		--font_size--small: 0.9rem;
+
+
+		--borders--text_input: 1px solid var(--colors--border);
 
 		/* Light mode */
 		@media (prefers-color-scheme: light) {
@@ -22,9 +30,9 @@ export const GlobalStyle = createGlobalStyle`
 			--colors--background_transparent: rgba(255, 255, 255, 0.9);
 			--colors--overlay: rgba(255, 255, 255, 0.3);
 			--colors--overlay_alternate: rgba(0, 0, 0, 0.1);
-			--colors--background_alternate: #f2f2f2;
+			--colors--background_alternate: #f6f6f6;
 			--colors--background_opposite: #111;
-			--colors--border: #333;
+			--colors--border: #e9e9e9;
 			--colors--border_alternate: #f2f2f2;
 			--colors--text: #000;
 			--colors--text_opposite: #fff;
@@ -77,9 +85,12 @@ export const GlobalStyle = createGlobalStyle`
 	}
 
 	html,
-	body {
+	body,
+	input,
+	textarea {
 		margin: 0;
 		font-family: var(--font--system);
+		font-size: var(--font_size--regular);
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
 
@@ -95,18 +106,20 @@ export const GlobalStyle = createGlobalStyle`
 
 	h1,
 	h2,
-	h3,
-	h4,
-	h5,
-	h6,
-	button {
-		font-weight: 900;
+	h3 {
 		font-family: 'Unbounded', system-ui, Helvetica Neue, Arial, Helvetica, sans-serif;
+	}
+
+	h1 {
+		font-size: var(--font_size--large);
+		font-weight: 900;
 	}
 
 	button {
 		border: none;
 		appearance: none;
+		font-size: var(--font_size--regular);
+		font-weight: 700;
 	}
 
 	html,
@@ -128,8 +141,8 @@ export const GlobalStyle = createGlobalStyle`
 		flex-direction: column;
 	}
 	label b {
-		font-weight: 800;
 		width: 100%;
+		font-weight: 600;
 	}
 
 	a {
@@ -137,16 +150,14 @@ export const GlobalStyle = createGlobalStyle`
 		text-decoration: none;
 	}
 
-	p b {
-		font-weight: 800;
-	}
+ 
 
 	input,
 	textarea,
 	select {
 		min-height: 30px;
 		padding: 5px 10px;
-		border: 2px solid var(--colors--border);
+		border: var(--borders--text_input);
 		border-radius: 10px;
 		width: auto;
 		min-width: 0;
@@ -154,7 +165,6 @@ export const GlobalStyle = createGlobalStyle`
 		display: inline-block;
 		background-color: transparent;
 		color: inherit;
-		font-size: 1rem;
 		appearance: none;
 	}
 
@@ -199,6 +209,7 @@ export const Main = styled.main<{ withPadding?: boolean; center?: boolean }>`
 	overflow: scroll;
 	min-height: 0;
 	padding: ${({ withPadding }) => (withPadding ? '10px' : '0')};
+	background-color: var(--colors--background_alternate);
 
 	${({ center }) =>
 		center &&
@@ -211,14 +222,11 @@ export const Main = styled.main<{ withPadding?: boolean; center?: boolean }>`
 	`}
 
 	h2 {
-		font-weight: 900;
-		font-size: 2rem;
 		margin: 0 0 16px;
 	}
 
 	h3 {
-		font-weight: 900;
-		font-size: 1.5rem;
+		font-size: var(--font_size--large);
 		margin-bottom: 8px;
 	}
 
